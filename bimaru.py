@@ -2,9 +2,9 @@
 # Devem alterar as classes e funções neste ficheiro de acordo com as instruções do enunciado.
 # Além das funções e classes já definidas, podem acrescentar outras que considerem pertinentes.
 
-# Grupo 00:
-# 00000 Nome1
-# 00000 Nome2
+# Grupo 05:
+# 102447 Guilherme Belchior
+# 103540 Gonçalo Alves
 
 import sys
 from search import (
