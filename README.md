@@ -305,21 +305,22 @@ para a sua implementação.
 ming problem. Informs Transactions on Education, 10(3), 156-162,https://pubsonline.informs.org/
 doi/abs/10.1287/ited.1100.0047.
 
-
+```py
 class Bimaru(Problem):
 def __init__(self, board: Board):
 """ O construtor especifica o estado inicial. """
 # TODO
 pass
-
 ```
+
+```py
 def actions(self, state: BimaruState):
 """ Retorna uma lista de ações que podem ser executadas a
 partir do estado passado como argumento. """
 # TODO
 pass
 ```
-```
+```py
 def result(self, state: BimaruState, action):
 """ Retorna o estado resultante de executar a 'action' sobre
 'state' passado como argumento. A ação a executar deve ser uma
@@ -328,7 +329,7 @@ self.actions(state). """
 # TODO
 pass
 ```
-```
+```py
 def goal_test(self, state: BimaruState):
 """ Retorna True se e só se o estado passado como argumento é
 um estado objetivo. Deve verificar se todas as posições da grelha
@@ -336,7 +337,7 @@ estão preenchidas de acordo com as regras do problema. """
 # TODO
 pass
 ```
-```
+```py
 def h(self, node: Node):
 """ Função heuristica utilizada para a procura A*. """
 # TODO
@@ -350,10 +351,14 @@ Considere que o ficheiroi1.txtse encontra na diretoria a partir da qual o códig
 executado e que contém a instância descrita na secção 4.1.
 
 
-Exemplo 1:
+# Exemplo 1:
 
-# Ler a instância a partir do ficheiro 'i1.txt' (Figura 1):
-# $ python3 bimaru.py < i1.txt
+## Ler a instância a partir do ficheiro 'i1.txt' (Figura 1):
+
+```bash
+$ python3 bimaru.py < i1.txt
+```
+```py
 board = Board.parse_instance()
 
 # Imprimir valores adjacentes
@@ -369,11 +374,16 @@ Output:
 (C, None)
 (T, None)
 (None, None)
+```
 
-Exemplo 2:
+# Exemplo 2:
 
-# Ler grelha do ficheiro 'i1.txt' (Figura 1):
-# $ python3 bimaru.py < i1.txt
+## Ler grelha do ficheiro 'i1.txt' (Figura 1):
+```bash
+ $ python3 bimaru.py < i1.txt
+```
+
+```py
 board = Board.parse_instance()
 
 # Criar uma instância de Bimaru:
@@ -395,10 +405,11 @@ Output:
 
 None
 w
+```
 
+# Exemplo 3:
 
-Exemplo 3:
-
+```py
 # Ler grelha do ficheiro 'i1.txt' (Figura 1):
 # $ python3 bimaru.py < i1.txt
 board = Board.parse_instance()
@@ -420,6 +431,7 @@ s5 = problem.result(s4, (2, 1, w))
 # considere que s94 contém a solução final
 
 # Verificar se foi atingida a solução
+```py
 print("Is goal?", problem.goal_test(s5))
 print("Is goal?", problem.goal_test(s94))
 print("Solution:\n", s94.board.print(), sep="")
@@ -439,21 +451,29 @@ W...t.....
 t...b...t.
 m.......B.
 b....C....
+```
 
+# Exemplo 4:
 
-Exemplo 4:
+## Ler grelha do ficheiro 'i1.txt' (Figura 1):
+```bash
+$ python3 bimaru.py < i1.txt
+```
 
-# Ler grelha do ficheiro 'i1.txt' (Figura 1):
-# $ python3 bimaru.py < i1.txt
 board = Board.parse_instance()
 
-# Criar uma instância de Bimaru:
+## Criar uma instância de Bimaru:
+```py
 problem = Bimaru(board)
+```
 
-# Obter o nó solução usando a procura em profundidade:
+## Obter o nó solução usando a procura em profundidade:
+```py
 goal_node = depth_first_tree_search(problem)
+```
 
-# Verificar se foi atingida a solução
+## Verificar se foi atingida a solução
+```py
 print("Is goal?", problem.goal_test(goal_node.state))
 print("Solution:\n", goal_node.state.board.print(), sep="")
 
@@ -461,6 +481,7 @@ Output:
 
 Is goal? True
 Solution:
+
 T.....t...
 b.....M..t
 ......b..m
@@ -471,6 +492,7 @@ W...t.....
 t...b...t.
 m.......B.
 b....C....
+```
 
 O valor de retorno das funções de procura é um objeto do tipoNode. Do nó de retorno podem
 ser retiradas as diversas informaçãoes, por exemplo, estado final (goal_node.state), a acção
