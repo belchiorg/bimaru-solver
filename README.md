@@ -6,7 +6,7 @@ The project's tasks/objectives are in the subject's materials, listed in [this p
 
 ---
 
-# Inteligência Artificial 2022/
+# Inteligência Artificial 2022
 
 # Projeto: Bimaru
 
@@ -24,39 +24,28 @@ pela primeira vez noWorld Puzzle Championshipem 1992.
 
 ## 2 Descrição do problema
 
-De acordo com a descrição que consta na [CSPlib](https://www.csplib.org/Problems/prob014/references/), o jogo Bimaru decorre numa grelha qua-
-drada, representando uma área do oceano. Os jogos publicados geralmente usam uma grelha
-de 10×10, pelo que assumiremos essa dimensão no contexto do projeto.
-A área de oceano contém uma frota escondida que o jogador deve encontrar. Esta frota
-consiste num couraçado (quatro quadrados de comprimento), dois cruzadores (cada um com
-três quadrados de comprimento), três contratorpedeiros (cada um com dois quadrados de com-
-primento) e quatro submarinos (um quadrado cada).
-Os navios podem ser orientados horizontal ou verticalmente, e dois navios não ocupam
-quadrados da grelha adjacentes, nem mesmo na diagonal. O jogador também recebe as con-
-tagens de linha e coluna, ou seja, o número de quadrados ocupados em cada linha e coluna,
-e várias dicas. Cada dica especifica o estado de um quadrado individual na grelha: água (o
-quadrado está vazio); círculo (o quadrado é ocupado por um submarino); meio (este é um
-quadrado no meio de um couraçado ou cruzador); superior, inferior, esquerda ou direita (este
-quadrado é a extremidade de um navio que ocupa pelo menos dois quadrados).
-A Figura 1 mostra um exemplo da disposição inicial de uma grelha. A Figura 2 mostra
-uma solução para essa mesma grelha. Podemos assumir que uma instância de Bimaru tem
+De acordo com a descrição que consta na [CSPlib](https://www.csplib.org/Problems/prob014/references/), o jogo Bimaru decorre numa grelha qua-drada, representando uma área do oceano. Os jogos publicados geralmente usam uma grelha de 10×10, pelo que assumiremos essa dimensão no contexto do projeto.
+A área de oceano contém uma frota escondida que o jogador deve encontrar. Esta frota consiste num couraçado (quatro quadrados de comprimento), dois cruzadores (cada um com três quadrados de comprimento), três contratorpedeiros (cada um com dois quadrados de comprimento) e quatro submarinos (um quadrado cada).
+Os navios podem ser orientados horizontal ou verticalmente, e dois navios não ocupam quadrados da grelha adjacentes, nem mesmo na diagonal. O jogador também recebe as contagens de linha e coluna, ou seja, o número de quadrados ocupados em cada linha e coluna, e várias dicas. Cada dica especifica o estado de um quadrado individual na grelha: água (o quadrado está vazio); círculo (o quadrado é ocupado por um submarino); meio (este é um quadrado no meio de um couraçado ou cruzador); superior, inferior, esquerda ou direita (este quadrado é a extremidade de um navio que ocupa pelo menos dois quadrados).
+A Figura 1 mostra um exemplo da disposição inicial de uma grelha. A Figura 2 mostra uma solução para essa mesma grelha. Podemos assumir que uma instância de Bimaru tem
 uma solução única.
 
 
 (INSERT FIGURE 1 HERE)
+
 Figura 1: Exemplo de uma instância de Bimaru
 
 (INSERT FIGURE 2 HERE)
+
 Figura 2: Exemplo de uma solução para uma instância de Bimaru
 
 
-As imagens que constam no enunciado foram obtidas a partir da aplicação Sea Battle de-
-senvolvida por AculApps para [IOS](https://apps.apple.com/pt/app/sea-battle-unlimited/id6444275561?l=en) e [Android](https://play.google.com/store/apps/details?id=ch.aculapps.seabattleunlimited&hl=en).
+As imagens que constam no enunciado foram obtidas a partir da aplicação Sea Battle de- senvolvida por AculApps para [IOS](https://apps.apple.com/pt/app/sea-battle-unlimited/id6444275561?l=en) e [Android](https://play.google.com/store/apps/details?id=ch.aculapps.seabattleunlimited&hl=en).
 
 ## 3 Objetivo
 
 O objetivo deste projeto é o desenvolvimento de um programa em Python 3.8 que, dada uma instância de Bimaru, retorna uma solução, i.e., uma grelha totalmente preenchida.
-O programa deve ser desenvolvido num ficheiro `bimaru.py`, que lê uma instância de Bimaru a partir dostandard inputno formato descrito na secção 4.1. O programa deve resolver o problema utilizando uma técnica à escolha e imprimir a solução para ostandard outputno
+O programa deve ser desenvolvido num ficheiro [bimaru.py](./bimaru.py), que lê uma instância de Bimaru a partir dostandard inputno formato descrito na secção 4.1. O programa deve resolver o problema utilizando uma técnica à escolha e imprimir a solução para ostandard outputno
 formato descrito na secção 4.2.
 
 Utilização:
@@ -67,8 +56,7 @@ python3 bimaru.py < <instance_file>
 
 ## 4 Formato de input e output
 
-O formato que se segue é baseado no documentoFile Format Description for Unsolvable
-Boards for CSPLibescrito por Moshe Rubin (Mountain Vista Software) em dezembro de 2005.
+O formato que se segue é baseado no documentoFile Format Description for Unsolvable Boards for CSPLibescrito por Moshe Rubin (Mountain Vista Software) em dezembro de 2005.
 
 ### 4.1 Formato do input
 
@@ -184,126 +172,96 @@ que contém a implementação do projeto.
 Outras dependências não são permitidas, exceto o python packagenumpy, que pode ser
 útil para representar a solução e ter acesso a operações sobre arrays.
 
-5.1.1 Procuras
+#### 5.1.1 Procuras
 
-No ficheirosearch.pyestão implementadas as estruturas necessárias para correr os diferentes
+No ficheiro [search.py](./search.py) estão implementadas as estruturas necessárias para correr os diferentes
 algoritmos de procura. Destacam-se:
 
-- ClasseProblem: Representação abstrata do problema de procura;
-- Funçãobreadth_first_tree_search: Procura em largura primeiro;
-- Funçãodepth_first_tree_search: Procura em profundidade primeiro;
-- Funçãogreedy_search: Procura gananciosa;
-- Funçãoastar_search: Procura A*.
+- Classe `Problem`: Representação abstrata do problema de procura;
+- Função `breadth_first_tree_search`: Procura em largura primeiro;
+- Função `depth_first_tree_search`: Procura em profundidade primeiro;
+- Função `greedy_search`: Procura gananciosa;
+- Função `astar_search`: Procura A*.
 
-5.1.2 ClasseBimaruState
+#### 5.1.2 ClasseBimaruState
 
-Esta classe representa os estados utilizados nos algoritmos de procura. O membroboard
-armazena a configuração da grelha a que o estado corresponde. Abaixo é apresentado o código
-desta classe. Podem ser feitas alterações a esta classe, como por exemplo modificações ao
-método__lt__(self, other)para suportar funções de desempate mais complexas. No
+Esta classe representa os estados utilizados nos algoritmos de procura. O membroboard armazena a configuração da grelha a que o estado corresponde. Abaixo é apresentado o código desta classe. Podem ser feitas alterações a esta classe, como por exemplo modificações ao método `__lt__(self, other)` para suportar funções de desempate mais complexas. No
 entanto, estas alterações devem ser devidamente justificadas com comentários no código.
 
+```py
 class BimaruState:
 state_id = 0
 
-```
 def __init__(self, board):
-self.board = board
-self.id = BimaruState.state_id
-BimaruState.state_id += 1
+    self.board = board
+    self.id = BimaruState.state_id
+    BimaruState.state_id += 1
 ```
-```
+```py
 def __lt__(self, other):
-""" Este método é utilizado em caso de empate na gestão da lista
-de abertos nas procuras informadas. """
-return self.id < other.id
+    """ Este método é utilizado em caso de empate na gestão da lista de abertos nas procuras informadas. """
+    return self.id < other.id
 ```
 
 ### 5.2 Código a implementar
 
-5.2.1 ClasseBoard
+#### 5.2.1 ClasseBoard
 
-A classeBoardé a representação interna de uma grelha de Bimaru. A implementação desta
-classe e respectivos métodos élivre. Pode, a título de exemplo, incluir os métodos para deter-
-minar valores adjacentes adjacent_vertical_valueseadjacent_horizontal_values
-que recebem dois argumentos, as coordenadas na grelha (linha, coluna), e devolvem um tuplo
-com duas strings que correspondem aos valores adjacentes na vertical (acima, abaixo) e na
-horizontal (esquerda, direita), respectivamente. Caso não existam valores adjacentes, i.e. nas
-extremidades da grelha, ou caso não tenham ainda sido preenchidos, devolvemNone. Pode
-também implementar outros métodos, como por exemplo um métodoget_valueque retorne
-o valor preenchido numa determinada posição, ou um métodoprintque imprime a grelha
+A classe `Board` é a representação interna de uma grelha de Bimaru. A implementação desta
+classe e respectivos métodos é livre. Pode, a título de exemplo, incluir os métodos para determinar valores adjacentes `adjacent_vertical_values`e `adjacent_horizontal_values` que recebem dois argumentos, as coordenadas na grelha (linha, coluna), e devolvem um tuplo com duas strings que correspondem aos valores adjacentes na vertical (acima, abaixo) e na
+horizontal (esquerda, direita), respectivamente. Caso não existam valores adjacentes, i.e. nas extremidades da grelha, ou caso não tenham ainda sido preenchidos, devolvemNone. Pode
+também implementar outros métodos, como por exemplo um método `get_value` que retorne o valor preenchido numa determinada posição, ou um métodoprintque imprime a grelha
 no formato descrito na secção 4.2. Estes métodos poderão ser utilizados para fazer testes à
 restante implementação da classe.
 
+```py
 class Board:
 """ Representação interna de uma grelha de Bimaru. """
 
-```
 def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
 """ Devolve os valores imediatamente acima e abaixo,
 respectivamente. """
-# TODO
-pass
+    # TODO
+    pass
 ```
-```
+```py
 def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
-""" Devolve os valores imediatamente à esquerda e à direita,
+    """ Devolve os valores imediatamente à esquerda e à direita,
 respectivamente. """
-# TODO
-pass
+        # TODO
+    pass
+    # TODO: outros metodos da classe
 ```
-```
-# TODO: outros metodos da classe
-```
-5.2.2 Funçãoparse_instance
+#### 5.2.2 Funçãoparse_instance
 
-A funçãoparse_instanceé responsável por ler uma instância do problema no formato de
-input apresentado (secção 4.1) e devolver um objeto do tipoBoardque a represente. Esta
-função deve ler a instância a partir do standard input (stdin).
+A função `parse_instance` é responsável por ler uma instância do problema no formato de input apresentado (secção 4.1) e devolver um objeto do tipo `Board` que a represente. Esta função deve ler a instância a partir do standard input (stdin).
 
-
-```
+```py
 @staticmethod
 def parse_instance():
-"""Lê a instância do problema do standard input (stdin)
+    """Lê a instância do problema do standard input (stdin)
 e retorna uma instância da classe Board.
-```
-```
-Por exemplo:
-$ python3 bimaru.py < input_T
-```
-```
-> from sys import stdin
-> line = stdin.readline().split()
-"""
-# TODO
-pass
+    Por exemplo:
+    $ python3 bimaru.py < input_T
+    > from sys import stdin
+    > line = stdin.readline().split()
+    """
+    # TODO
+    pass
 ```
 5.2.3 ClasseBimaru
 
-A classeBimaruherda da classeProblemdefinida no ficheirosearch.pydo código a utilizar
+A classe `Bimaru` herda da classe `Problem` definida no ficheiro [search.py](./search.py) do código a utilizar
 e deve implementar os métodos necessários ao seu funcionamento.
-O métodoactionsrecebe como argumento um estado e retorna uma lista de ações que
-podem ser executadas a partir desse estado. O métodoresultrecebe como argumento um
-estado e uma ação, e retorna o resultado de aplicar essa ação a esse estado. Numa primeira
-abordagem, pode considerar que uma ação corresponde a preencher uma posição livre da gre-
-lha. Neste caso, cada ação pode ser representada por um tuplo com 3 valores (índice da linha,
-índice da coluna, valor a preencher na dada posição). Por exemplo,(0, 1, w)representa a
-ação “preencher a posição da linha 0 e coluna 1 com água”. No entando, outras modelações
-poderão ser mais eficientes, dependendo do problema. Para além de uma modelação baseada
-em posições individuais da grelha,sugere-seconsiderar, por exemplo, modelações baseadas
-em navios^5.
-Para suportar as procuras informadas, nomeadamente a procura gananciosa e a procura
-A*, deve desenvolver uma heurística que consiga guiar da forma mais eficiente possível estas
-procuras. A heurística corresponde à implementação do métodohda classeBimaru. Esta
-função recebe como argumento umnode, a partir do qual se pode aceder ao estado atual em
-node.state.
-De seguida é disponibilizado um protótipo da classeBimaruque pode ser usado como base
-para a sua implementação.
+O método `actions` recebe como argumento um estado e retorna uma lista de ações que podem ser executadas a partir desse estado. O método `result` recebe como argumento um estado e uma ação, e retorna o resultado de aplicar essa ação a esse estado. Numa primeira abordagem, pode considerar que uma ação corresponde a preencher uma posição livre da grelha. Neste caso, cada ação pode ser representada por um tuplo com 3 valores (índice da linha, índice da coluna, valor a preencher na dada posição). Por exemplo, (0, 1, w) representa a
+ação “preencher a posição da linha 0 e coluna 1 com água”. No entanto, outras modelações poderão ser mais eficientes, dependendo do problema. Para além de uma modelação baseada
+em posições individuais da grelha,sugere-se considerar, por exemplo, modelações baseadas em navios (ver abaixo).
+Para suportar as procuras informadas, nomeadamente a procura gananciosa e a procura A\*, deve desenvolver uma heurística que consiga guiar da forma mais eficiente possível estas
+procuras. A heurística corresponde à implementação do método da classe `Bimaru`. Esta função recebe como argumento um `node`, a partir do qual se pode aceder ao estado atual em `node.state`.
+De seguida é disponibilizado um protótipo da classe `Bimaru` que pode ser usado como base para a sua implementação.
 
-(^5) Meuffels, W. J. M., & den Hertog, D. (2010). Puzzle—Solving the Battleship puzzle as an integer program-
-ming problem. Informs Transactions on Education, 10(3), 156-162,https://pubsonline.informs.org/
-doi/abs/10.1287/ited.1100.0047.
+**NOTA (navios):** Meuffels, W. J. M., & den Hertog, D. (2010). Puzzle—Solving the Battleship puzzle as an integer program-
+ming problem. Informs Transactions on Education, 10(3), 156-162,[https://pubsonline.informs.org/doi/abs/10.1287/ited.1100.0047](https://pubsonline.informs.org/doi/abs/10.1287/ited.1100.0047).
 
 
 class Bimaru(Problem):
@@ -480,16 +438,14 @@ que levou ao estado finalgoal_node.action, e o nó precedentegoal_node.parent.
 
 A nota do projecto será baseada nos seguintes critérios:
 
-- Execução correcta (75% - 15 val.). Estes valores correspondem a testes realizados via
-    submissão no Mooshak.
+- Execução correcta (75% - 15 val.). Estes valores correspondem a testes realizados via submissão no Mooshak.
 - Relatório (25% - 5 val.). O relatório será realizado em formato vídeo.
-
 
 ## 7 Condições de realização e prazos
 
 - O projecto deve ser realizado em grupos de 2 alunos.
 - Publicação do enunciado: até ao dia 5 de Maio
-- Inscrições de grupos no Fénix: 17 de Maio, até às 17:
+- Inscrições de grupos no Fénix: 17 de Maio, até às 17:00;
 - Entrega do projeto (.py) no Mooshak e relatório: 5 de Junho, até às 17:
 As inscrições dos grupos para o projeto serão feitas através do Fénix; este passo é essen-
 cial para posterior acesso ao Mooshak. O código do projeto e relatório têm de ser entregues
