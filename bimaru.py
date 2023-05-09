@@ -104,6 +104,12 @@ class Bimaru(Problem):
     # TODO: outros metodos da classe
 
 
+def read_cols():
+    cols = input().split()
+    if cols[0] != "COLUMN":
+        raise ValueError("Invalid input")
+    return cols[1:]
+
 if __name__ == "__main__":
     # TODO:
     # Ler o ficheiro do standard input,
