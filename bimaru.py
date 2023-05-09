@@ -35,22 +35,44 @@ class BimaruState:
 class Board:
     """Representação interna de um tabuleiro de Bimaru."""
 
+    board = []
+
+    def __init__(self):
+        for i in range(10):
+            row = []
+            for j in range(10):
+                row.append(None)
+            self.board.append(None)
+
+    def __init__(self, hints: list):
+
+        #* Initializes a blank board
+        for i in range(10):
+            row = []
+            for j in range(10):
+                row.append(None)
+            self.board.append(None)
+
+        #* Adds the hints to the board
+        for hint in hints:
+            # hint template: [row, col, val]
+            self.board[hint[0]][hint[1]] = hint[2]
+
     def get_value(self, row: int, col: int) -> str:
         """Devolve o valor na respetiva posição do tabuleiro."""
-        # TODO
-        pass
+        return self.board[row][col]
 
     def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente acima e abaixo,
         respectivamente."""
-        # TODO
-        pass
+
+        return (self.board[row-1][col], self.board[row+1][col]  )
 
     def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente à esquerda e à direita,
         respectivamente."""
-        # TODO
-        pass
+
+        return (self.board[row][col-1], self.board[row][col+1])
 
     @staticmethod
     def parse_instance():
@@ -63,8 +85,26 @@ class Board:
             > from sys import stdin
             > line = stdin.readline().split()
         """
-        # TODO
-        pass
+        def read_rows():
+            row_line = input()
+            if not row_line.startswith("ROW"):
+                raise ValueError()
+            # TODO: Buscar valores e dar return
+
+        def read_cols():
+            cols = input().split()
+            if cols[0] != "COLUMN":
+                raise ValueError("Invalid input")
+            return cols[1:]
+
+        read_rows()
+        read_cols()
+        hints = []
+        hint_count = input()
+        for i in range(int(hint_count)):
+            hint = input()
+            hints.append(hint.split()[1:])
+        return Board(hints)
 
     # TODO: outros metodos da classe
 
@@ -103,22 +143,11 @@ class Bimaru(Problem):
 
     # TODO: outros metodos da classe
 
-def read_rows():
-    row_line = input()
-    if not row_line.startswith("ROW"):
-        raise ValueError()
-    # TODO: Buscar valores e dar return
-
-def read_cols():
-    cols = input().split()
-    if cols[0] != "COLUMN":
-        raise ValueError("Invalid input")
-    return cols[1:]
-
 if __name__ == "__main__":
     # TODO:
     # Ler o ficheiro do standard input,
     # Usar uma técnica de procura para resolver a instância,
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
-    
+    # TODO: Initializar o Problem, Iniciar o primeiro estado e o board
+    # TODO: Usar a técnica de procura para resolver a instância
