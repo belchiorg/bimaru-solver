@@ -103,6 +103,11 @@ class Bimaru(Problem):
 
     # TODO: outros metodos da classe
 
+def read_rows():
+    row_line = input()
+    if not row_line.startswith("ROW"):
+        raise ValueError()
+    # TODO: Buscar valores e dar return
 
 def read_cols():
     cols = input().split()
@@ -116,4 +121,4 @@ if __name__ == "__main__":
     # Usar uma técnica de procura para resolver a instância,
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
-    pass
+    
