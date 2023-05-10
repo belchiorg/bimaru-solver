@@ -36,6 +36,9 @@ class Board:
     """Representação interna de um tabuleiro de Bimaru."""
 
     board = []
+    rows = [] #? Este atributo sería os "valores" passados pela quantidade de barcos nas linhas
+    cols = [] #? Este atributo sería os "valores" passados pela quantidade de barcos nas colunas
+
 
     def __init__(self):
         for i in range(10):
@@ -97,8 +100,8 @@ class Board:
                 raise ValueError("Invalid input")
             return cols[1:]
 
-        read_rows()
-        read_cols()
+        rows = read_rows()
+        cols = read_cols()
         hints = []
         hint_count = input()
         for i in range(int(hint_count)):
