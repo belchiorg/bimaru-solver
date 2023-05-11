@@ -36,18 +36,25 @@ class Board:
     """Representação interna de um tabuleiro de Bimaru."""
 
     board = []
-    rows = [] #? Este atributo sería os "valores" passados pela quantidade de barcos nas linhas
-    cols = [] #? Este atributo sería os "valores" passados pela quantidade de barcos nas colunas
+
+    rows = [] #? Este atributo sería os "valores" passados pela quantidade de barcos necessarios em cada linha
+    cols = [] #? Este atributo sería os "valores" passados pela quantidade de barcos necessarios em cada coluna
+
+    filled_rows = []  #? Este atributo sería os "valores" PREENCHIDOS pela quantidade de barcos nas linhas
+    filled_cols = []  #? Este atributo sería os "valores" PREENCHIDOS pela quantidade de barcos nas linhas
 
 
     def __init__(self):
         for i in range(10):
+            self.filled_rows.append(0)
+            self.filled_cols.append(0)
+
             row = []
             for j in range(10):
                 row.append(None)
-            self.board.append(None)
+            self.board.append(row)
 
-    def __init__(self, hints: list):
+    def __init__(self,rows:list, cols:list , hints: list):
 
         #* Initializes a blank board
         for i in range(10):
@@ -55,6 +62,10 @@ class Board:
             for j in range(10):
                 row.append(None)
             self.board.append(None)
+
+        #* Adds the rows and cols to the board
+        self.rows = rows
+        self.cols = cols
 
         #* Adds the hints to the board
         for hint in hints:
@@ -107,10 +118,41 @@ class Board:
         for i in range(int(hint_count)):
             hint = input()
             hints.append(hint.split()[1:])
-        return Board(hints)
+        return Board(rows, cols, hints)
 
     # TODO: outros metodos da classe
 
+    """
+    ================================================================================================================
+    
+    Funções daqui para baixo são auxiliares para filtrar os casos gerados e ajudar a completar o jogo
+    
+    ================================================================================================================
+    """ 
+
+    def fill_rows(self, row: int):
+        #* Função que preenche uma linha com água
+
+        for row in self.rows:
+            if row == 0:
+                for i in range(10):
+                    if self.board[row][i] == None:
+                        self.board[row][i] = "W"
+
+    def fill_cols(self, col: int):
+        #* Função que preenche uma coluna com água
+
+        for col in self.cols:
+            if col == 0:
+                for i in range(10):
+                    if self.board[i][col] == None:
+                        self.board[i][col] = "W"
+
+    def prepare_board(self):
+        #* Função que prepara o tabuleiro para ser jogado, preenchendo os espaços vazios com água
+
+        self.fill_rows()
+        self.fill_cols()
 
 class Bimaru(Problem):
     def __init__(self, board: Board):
