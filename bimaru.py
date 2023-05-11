@@ -114,12 +114,12 @@ class Board:
             hint = hint[1:]
             hints.append(hint)
             
-            if(hint[2] != "W"):
+            if(hint[2] != 'W'):
                 rows[hint[0]] = rows[hint[0]] - 1
                 cols[hint[1]] = cols[hint[1]] - 1
         return Board(rows, cols, hints)
 
-    # TODO: outros metodos da classe
+    # TODO: Outros métodos da classe
 
     """
     ================================================================================================================
@@ -136,7 +136,7 @@ class Board:
             if row == 0:
                 for i in range(10):
                     if self.board[row][i] is None:
-                        self.board[row][i] = "W"
+                        self.board[row][i] = 'W'
 
     def fill_cols(self, col: int):
         #* Função que preenche uma coluna com água
@@ -145,13 +145,22 @@ class Board:
             if col == 0:
                 for i in range(10):
                     if self.board[i][col] is None:
-                        self.board[i][col] = "W"
+                        self.board[i][col] = 'W'
 
     def prepare_board(self):
         #* Função que prepara o tabuleiro para ser jogado, preenchendo os espaços vazios com água
-
         self.fill_rows()
         self.fill_cols()
+
+    def to_string(self):
+        #! Esta função apenas funciona quando o board está preenchido!
+        rows_as_strings = []
+        for i in range(len(self.rows)):
+            rows_as_strings.append("".join(self.rows))
+        
+        return ("\n".join(rows_as_strings))
+
+    # TODO: outros metodos da classe
 
 class Bimaru(Problem):
     def __init__(self, board: Board):
@@ -177,8 +186,15 @@ class Bimaru(Problem):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas de acordo com as regras do problema."""
-        # TODO
-        pass
+        for i in range(len(state.board.rows)):
+            if state.board.rows[i] != 0:
+                return False
+            
+        for i in range(len(state.board.cols)):
+            if state.board.cols[i] != 0:
+                return False
+        
+        return True
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
