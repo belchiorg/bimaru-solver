@@ -57,11 +57,7 @@ class Board:
     def __init__(self,rows:list, cols:list , hints: list):
 
         #* Initializes a blank board
-        for i in range(10):
-            row = []
-            for j in range(10):
-                row.append(None)
-            self.board.append(None)
+        self.board = [[None] * len(cols)] * len(rows)
 
         #* Adds the rows and cols to the board
         self.rows = rows
@@ -100,10 +96,10 @@ class Board:
             > line = stdin.readline().split()
         """
         def read_rows():
-            row_line = input()
-            if not row_line.startswith("ROW"):
+            rows = input().split()
+            if rows[0] != "ROW":
                 raise ValueError()
-            # TODO: Buscar valores e dar return
+            return rows[1:]
 
         def read_cols():
             cols = input().split()
@@ -116,8 +112,15 @@ class Board:
         hints = []
         hint_count = input()
         for i in range(int(hint_count)):
-            hint = input()
-            hints.append(hint.split()[1:])
+            hint = input().split()
+            if hint[0] != "HINT":
+                raise ValueError("Invalid input")
+            hint = hint[1:]
+            hints.append(hint)
+            
+            if(hint[2] != "W"):
+                rows[hint[0]] = rows[hint[0]] - 1
+                cols[hint[1]] = cols[hint[1]] - 1
         return Board(rows, cols, hints)
 
     # TODO: outros metodos da classe
@@ -136,7 +139,7 @@ class Board:
         for row in self.rows:
             if row == 0:
                 for i in range(10):
-                    if self.board[row][i] == None:
+                    if self.board[row][i] is None:
                         self.board[row][i] = "W"
 
     def fill_cols(self, col: int):
@@ -145,7 +148,7 @@ class Board:
         for col in self.cols:
             if col == 0:
                 for i in range(10):
-                    if self.board[i][col] == None:
+                    if self.board[i][col] is None:
                         self.board[i][col] = "W"
 
     def prepare_board(self):
@@ -196,3 +199,4 @@ if __name__ == "__main__":
     # Imprimir para o standard output no formato indicado.
     # TODO: Initializar o Problem, Iniciar o primeiro estado e o board
     # TODO: Usar a técnica de procura para resolver a instância
+    pass
