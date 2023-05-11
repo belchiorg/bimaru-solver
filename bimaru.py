@@ -37,12 +37,8 @@ class Board:
 
     board = []
 
-    rows = [] #? Este atributo sería os "valores" passados pela quantidade de barcos necessarios em cada linha
-    cols = [] #? Este atributo sería os "valores" passados pela quantidade de barcos necessarios em cada coluna
-
-    filled_rows = []  #? Este atributo sería os "valores" PREENCHIDOS pela quantidade de barcos nas linhas
-    filled_cols = []  #? Este atributo sería os "valores" PREENCHIDOS pela quantidade de barcos nas linhas
-
+    rows = [] #? Este atributo diz respeito à contagem de partes de barcos por preencher por linha
+    cols = [] #? Este atributo diz respeito à contagem de partes de barcos por preencher por coluna
 
     def __init__(self):
         for i in range(10):
