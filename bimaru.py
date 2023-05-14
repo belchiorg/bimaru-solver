@@ -131,21 +131,35 @@ class Board:
 
     def fill_rows(self, row: int):
         #* Função que preenche uma linha com água
+        not_filled = []
 
-        for row in self.rows:
-            if row == 0:
-                for i in range(10):
-                    if self.board[row][i] is None:
-                        self.board[row][i] = '.'
+        for i in range(self.cols):
+            if self.board[row][i] is None:
+                self.board[row][i] = '.'
+            else:
+                not_filled.append(i)
+        
+        # Verifica se cada célula não preenchida é parte de um barco
+        # e troca pela posição relativa correspondente caso tenha informação
+        # suficiente (esta operação deve ser feita APÓS preencher o resto com água)
+        for i in not_filled:
+            self.convert_cell(row, i)
 
     def fill_cols(self, col: int):
         #* Função que preenche uma coluna com água
+        not_filled = []
 
-        for col in self.cols:
-            if col == 0:
-                for i in range(10):
-                    if self.board[i][col] is None:
-                        self.board[i][col] = '.'
+        for i in range(10):
+            if self.board[i][col] is None:
+                self.board[i][col] = '.'
+            else:
+                not_filled.append(i)
+        
+        # Verifica se cada célula não preenchida é parte de um barco
+        # e troca pela posição relativa correspondente caso tenha informação
+        # suficiente (esta operação deve ser feita APÓS preencher o resto com água)
+        for i in not_filled:
+            self.convert_cell(i, col)
 
 
     def set_cell(self, row: int, col: int, is_ship: bool):
