@@ -136,7 +136,7 @@ class Board:
             if row == 0:
                 for i in range(10):
                     if self.board[row][i] is None:
-                        self.board[row][i] = 'W'
+                        self.board[row][i] = '.'
 
     def fill_cols(self, col: int):
         #* Função que preenche uma coluna com água
@@ -145,7 +145,66 @@ class Board:
             if col == 0:
                 for i in range(10):
                     if self.board[i][col] is None:
-                        self.board[i][col] = 'W'
+                        self.board[i][col] = '.'
+
+
+    def set_cell(self, row: int, col: int, is_ship: bool):
+        if ('A' <= self.board[row][col] <= 'Z'):
+            #? Lançar erro aqui, por não se poder mudar a célula?
+            return
+        
+        if (is_ship == False):
+            self.board[row][col] = '.'
+        else:
+            self.board[row][col] = '?' # Colocar uma parte do barco, cuja posição relativa é desconhecida
+            self.convert_cell(row, col)
+
+    def erase_cell(self, row: int, col: int):
+        if (self.board[row][col] is not None and 'A' <= self.board[row][col] <= 'Z'):
+            #? Lançar erro aqui, por não se poder mudar a célula?
+            return
+        
+        self.board[row][col] = None
+
+    def is_cell_ship(self, row: int, col: int):
+        return any(self.board[row][col].upper() == x for x in ['T', 'M', 'C', 'B', 'L', 'R'])
+    
+    def is_cell_water(self, row: int, col: int):
+        return self.board[row][col] is not None and self.board[row][col] == '.'
+    
+    def convert_cell(self, row: int, col: int):
+        if (self.board[row][col] is None or self.board[row][col] == "." \
+            or 'A' <= self.board[row][col] <= 'Z'):
+            # Não alterar posições que não tenham barcos colocados pelo agente
+            return
+        
+        # Os 8 possíveis casos para partes do barco, consoante as células adjacentes
+        if self.is_cell_ship(row-1, col):
+            if self.is_cell_ship(row+1, col): # Caso do barco em cima e em baixo
+                self.board[row][col] = 'm'
+            elif self.is_cell_water(row+1, col): # Caso do barco em cima e àgua em baixo
+                self.board[row][col] = 'b'
+        
+        elif self.is_cell_ship(row, col-1):
+            if self.is_cell_ship(row, col+1): # Caso do barco à esq e à direita
+                self.board[row][col] = 'm'
+            elif self.is_cell_water(row, col+1): # Caso do barco à esq e àgua à direita
+                self.board[row][col] = 'r'
+
+        elif self.is_cell_water(row-1, col):
+            if self.is_cell_water(row+1, col) and self.is_cell_water(row, col-1) \
+            and self.is_cell_water(row, col+1): # Caso de haver àgua à volta
+                self.board[row][col] = 'c'
+            elif self.is_cell_ship(row+1, col): # Caso de àgua em cima e barco em baixo
+                self.board[row][col] = 't'
+        
+        # Caso de àgua à esq. e barco à dir
+        elif self.is_cell_water(row, col-1) and self.is_cell_ship(row, col+1):
+            self.board[row][col] = 'l'
+
+        else: # Impossível de saber a posição relativa
+            self.board[row][col] = '?'
+            
 
     def prepare_board(self):
         #* Função que prepara o tabuleiro para ser jogado, preenchendo os espaços vazios com água
