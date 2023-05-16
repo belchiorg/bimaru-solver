@@ -218,6 +218,16 @@ class Board:
 
         else: # Impossível de saber a posição relativa
             self.board[row][col] = '?'
+
+    def surround_cell(self, row: int, col: int):
+        """This function takes two coordinates for a cell with a part of a ship on it
+        and fills some of the cells around it with water, depending on the relative
+        position of such part"""
+        if(self.board[row][col] is None or self.is_cell_water(row, col)):
+            # Do nothing if the specified cell is not a ship part
+            return
+        
+        if(self.board[row][col])
             
 
     def prepare_board(self):
