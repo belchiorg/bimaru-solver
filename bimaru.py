@@ -258,7 +258,27 @@ class Board:
             # Do nothing if the specified cell is not a ship part
             return
         
-        if(self.board[row][col])
+        # Relative positions of squares to put water
+        toFill = []
+        if(self.board[row][col].upper() == 'C'):
+            toFill = [(-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1)]
+        elif(self.board[row][col].upper() == 'T'):
+            toFill = [(2, -1), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (2, 1)]
+        elif(self.board[row][col].upper() == 'L'):
+            toFill = [(-1, 2), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (1, 1), (1, 2)]
+        elif(self.board[row][col].upper() == 'R'):
+            toFill = [(-1, -2), (-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (1, -2)]
+        elif(self.board[row][col].upper() == 'B'):
+            toFill = [(-2, -1), (-1, -1), (0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-2, 1)]
+        elif(self.board[row][col].upper() == 'M' or self.board[row][col] == '?'):
+            toFill = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
+        
+        for rel_pos in toFill:
+            if(self.is_cell_ship(row+rel_pos[0], col+rel_pos[1])):
+                #? Raise exception to affirm there is a mistake, or just return an error value?
+                raise AssertionError('Ship part is on a cell that should supposedly be water')
+
+            self.set_cell(row+rel_pos[0], col+rel_pos[1])
             
 
     def prepare_board(self):
