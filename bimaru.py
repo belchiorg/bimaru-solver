@@ -40,6 +40,9 @@ class Board:
     rows = [] #? Este atributo diz respeito à contagem de partes de barcos por preencher por linha
     cols = [] #? Este atributo diz respeito à contagem de partes de barcos por preencher por coluna
 
+    row_completed = [] #? Atributo que é reduzido quando se coloca um barco completo
+    col_completed = [] #? Atributo que é reduzido quando se coloca um barco completo
+
     def __init__(self):
         for i in range(10):
             self.filled_rows.append(0)
@@ -63,6 +66,24 @@ class Board:
         for hint in hints:
             # hint template: [row, col, val]
             self.board[hint[0]][hint[1]] = hint[2]
+
+    def __init__(self,rows:list, cols:list , row_completed: list, col_completed: list, hints: list):
+
+        #* Initializes a blank board
+        self.board = [[None] * len(cols)] * len(rows)
+
+        #* Adds the rows and cols to the board
+        self.rows = rows
+        self.cols = cols
+
+        self.row_completed = row_completed
+        self.col_completed = col_completed
+
+        #* Adds the hints to the board
+        for hint in hints:
+            # hint template: [row, col, val]
+            self.board[hint[0]][hint[1]] = hint[2]
+        
 
     def get_value(self, row: int, col: int) -> str:
         """Devolve o valor na respetiva posição do tabuleiro."""
@@ -105,6 +126,11 @@ class Board:
 
         rows = read_rows()
         cols = read_cols()
+        
+        #? Adiciona a lista de valores sem os barcos preenchidos
+        rows_completed = rows
+        cols_completed = cols
+
         hints = []
         hint_count = input()
         for i in range(int(hint_count)):
@@ -117,7 +143,12 @@ class Board:
             if(hint[2] != 'W'):
                 rows[hint[0]] = rows[hint[0]] - 1
                 cols[hint[1]] = cols[hint[1]] - 1
-        return Board(rows, cols, hints)
+            if (hint[2] == 'C'):
+                rows_completed[hint[0]] = rows_completed[hint[0]] - 1
+                cols_completed[hint[1]] = cols_completed[hint[1]] - 1
+
+
+        return Board(rows, cols, rows_completed, cols_completed, hints)
 
     # TODO: Outros métodos da classe
 
