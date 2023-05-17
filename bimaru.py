@@ -212,10 +212,13 @@ class Board:
         self.board[row][col] = None
 
     def is_cell_ship(self, row: int, col: int):
-        return any(self.board[row][col].upper() == x for x in ['T', 'M', 'C', 'B', 'L', 'R'])
+        return 0 <= row < len(self.rows) and 0 <= col < len(self.cols) \
+            and any(self.board[row][col].upper() == x for x in ['T', 'M', 'C', 'B', 'L', 'R', '?'])
     
     def is_cell_water(self, row: int, col: int):
-        return self.board[row][col] is not None and self.board[row][col] == '.'
+        #* For optimization purposes, we can say that any cell out of bounds is water
+        return (not 0 <= row < len(self.rows) or not 0 <= col < len(self.cols)) \
+            or (self.board[row][col] is not None and self.board[row][col] == '.')
     
     def convert_cell(self, row: int, col: int):
         if (self.board[row][col] is None or self.board[row][col] == "." \
@@ -274,6 +277,9 @@ class Board:
             toFill = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
         
         for rel_pos in toFill:
+            if not(0 <= row+rel_pos[0] < len(self.rows) and 0 <= col+rel_pos[1] < len(self.cols)):
+                continue
+
             if(self.is_cell_ship(row+rel_pos[0], col+rel_pos[1])):
                 #? Raise exception to affirm there is a mistake, or just return an error value?
                 raise AssertionError('Ship part is on a cell that should supposedly be water')
