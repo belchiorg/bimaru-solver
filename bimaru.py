@@ -65,7 +65,7 @@ class Board:
         #* Adds the hints to the board
         for hint in hints:
             # hint template: [row, col, val]
-            self.board[hint[0]][hint[1]] = hint[2]
+            self.insert_hint(hint[0], hint[1], hint[2])
 
     def __init__(self,rows:list, cols:list , row_completed: list, col_completed: list, hints: list):
 
@@ -82,7 +82,7 @@ class Board:
         #* Adds the hints to the board
         for hint in hints:
             # hint template: [row, col, val]
-            self.board[hint[0]][hint[1]] = hint[2]
+            self.insert_hint(hint[0], hint[1], hint[2])
         
 
     def get_value(self, row: int, col: int) -> str:
@@ -100,6 +100,25 @@ class Board:
         respectivamente."""
 
         return (self.board[row][col-1], self.board[row][col+1])
+    
+
+    def insert_hint(self, row: int, col: int, val: str):
+            """Insere uma dica no tabuleiro."""
+            if(val != 'W'):
+                self.rows[row] = self.rows[row] - 1
+                self.cols[col] = self.cols[col] - 1
+            if (val == 'T'):
+                self.insert_hint(row+1, col, '?')
+            elif(val == 'B'):
+                self.insert_hint(row-1, col, '?')
+            elif(val == 'R'):
+                self.insert_hint(row, col+1, '?')
+            elif(val == 'L'):
+                self.insert_hint(row, col-1, '?')
+            elif(val == 'C'):
+                self.row_completed[row] = self.row_completed[row] - 1
+                self.col_completed[col] = self.col_completed[col] - 1
+        
 
     @staticmethod
     def parse_instance():
@@ -139,14 +158,6 @@ class Board:
                 raise ValueError("Invalid input")
             hint = hint[1:]
             hints.append(hint)
-            
-            if(hint[2] != 'W'):
-                rows[hint[0]] = rows[hint[0]] - 1
-                cols[hint[1]] = cols[hint[1]] - 1
-            if (hint[2] == 'C'):
-                rows_completed[hint[0]] = rows_completed[hint[0]] - 1
-                cols_completed[hint[1]] = cols_completed[hint[1]] - 1
-
 
         return Board(rows, cols, rows_completed, cols_completed, hints)
 
