@@ -171,6 +171,32 @@ class Board:
     ================================================================================================================
     """ 
 
+    def attempt_boat_horizontally(self, row: int, col:int):
+        #? Logica inicial: Vai testar se dá para colocar barcos horizontalmente na pos (x,y), se conseguir, junta a uma list. 
+        #? Talvez o melhor fosse dar return a um tuple, mas em objeto ficou mais facil para "representar" e talvez perceberes o que eu tinha pensado
+
+        possibilities = []
+
+        for i in range(4):
+            if (col+i <= 10 or self.board[row][col + i]!='w' or self.board[row][col + i] != 'b' or self.board[row][col + i]!= 't'):    
+                possibilities.append({"row": row, "col": col, "size":i+1, "orientation": "v"})
+            else:
+                return possibilities
+        return possibilities
+    
+    def attempt_boat_vertically(self, row: int, col:int):
+        #? Logica inicial: Vai testar se dá para colocar barcos verticalmente na pos (x,y), se conseguir, junta a uma list. 
+        #? Talvez o melhor fosse dar return a um tuple, mas em objeto ficou mais facil para "representar" e talvez perceberes o que eu tinha pensado
+
+        possibilities = []
+
+        for i in range(4):
+            if (col+i <= 10 or self.board[row+1][col]!='w' or self.board[row+i][col] != 'l' or self.board[row+i][col]!= 'r'):    
+                possibilities.append({row: row, col: col, size:i+1, orientation: "v"})
+            else:
+                return possibilities
+        return possibilities
+
     def fill_rows(self, row: int):
         #* Função que preenche uma linha com água
         not_filled = []
