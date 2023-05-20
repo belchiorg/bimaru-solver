@@ -176,7 +176,7 @@ class Board:
         #* Função que preenche uma linha com água
         not_filled = []
 
-        for i in range(self.cols):
+        for i in range(len(self.cols)):
             if self.board[row][i] is None:
                 self.board[row][i] = '.'
             else:
@@ -192,7 +192,7 @@ class Board:
         #* Função que preenche uma coluna com água
         not_filled = []
 
-        for i in range(10):
+        for i in range(len(self.rows)):
             if self.board[i][col] is None:
                 self.board[i][col] = '.'
             else:
@@ -206,7 +206,7 @@ class Board:
 
 
     def set_cell(self, row: int, col: int, is_ship: bool):
-        if ('A' <= self.board[row][col] <= 'Z'):
+        if (self.board[row][col] is not None and 'A' <= self.board[row][col] <= 'Z'):
             #? Lançar erro aqui, por não se poder mudar a célula?
             return
         
@@ -225,7 +225,7 @@ class Board:
 
     def is_cell_ship(self, row: int, col: int):
         return 0 <= row < len(self.rows) and 0 <= col < len(self.cols) \
-            and any(self.board[row][col].upper() == x for x in ['T', 'M', 'C', 'B', 'L', 'R', '?'])
+            and any((self.board[row][col] is not None and self.board[row][col].upper() == x) for x in ['T', 'M', 'C', 'B', 'L', 'R', '?'])
     
     def is_cell_water(self, row: int, col: int):
         #* For optimization purposes, we can say that any cell out of bounds is water
@@ -296,7 +296,7 @@ class Board:
                 #? Raise exception to affirm there is a mistake, or just return an error value?
                 raise AssertionError('Ship part is on a cell that should supposedly be water')
 
-            self.set_cell(row+rel_pos[0], col+rel_pos[1])
+            self.set_cell(row+rel_pos[0], col+rel_pos[1], False)
             
     def attempt_boat_horizontally(self, row: int, col:int):
         #? Logica inicial: Vai testar se dá para colocar barcos horizontalmente na pos (x,y), se conseguir, junta a uma list. 
@@ -408,6 +408,17 @@ if __name__ == "__main__":
     # TODO: Usar a técnica de procura para resolver a instância
 
     board = Board.parse_instance()
+    board.surround_cell(0, 0)
+    board.surround_cell(1, 6)
+    board.surround_cell(3, 2)
+    board.surround_cell(6, 0)
+    board.surround_cell(8, 8)
+    board.surround_cell(9, 5)
+    board.fill_cols(1)
+    board.fill_cols(2)
+    board.fill_cols(3)
+    board.fill_cols(5)
+    board.fill_rows(5)
     print(board.to_string())
 
 
