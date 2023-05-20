@@ -345,9 +345,15 @@ class Board:
 
     def to_string(self):
         #! Esta função apenas funciona quando o board está preenchido!
+        board_to_str = self.board.copy()
         rows_as_strings = []
+
         for i in range(len(self.rows)):
-            rows_as_strings.append("".join(self.rows))
+            for j in range(len(self.cols)):
+                if board_to_str[i][j] is None:
+                    board_to_str[i][j] = '_'
+
+            rows_as_strings.append("".join(board_to_str[i]))
         
         return ("\n".join(rows_as_strings))
 
@@ -404,10 +410,6 @@ if __name__ == "__main__":
     # TODO: Usar a técnica de procura para resolver a instância
 
     board = Board.parse_instance()
-    print(board.adjacent_vertical_values(3, 3))
-    print(board.adjacent_horizontal_values(3, 3))
-
-    print(board.adjacent_vertical_values(1, 0))
-    print(board.adjacent_horizontal_values(1, 0))
+    print(board.to_string())
 
 
