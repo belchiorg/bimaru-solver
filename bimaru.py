@@ -310,7 +310,7 @@ class Board:
         for i in range(4):
             if (not self.is_cell_water()):    
                 #! É importante garantir que há volta de todos os outros barcos, temos sempre agua
-                possibilities.append({"row": row, "col": col, "size":i+1, "orientation": "v"})
+                possibilities.append({"row": row, "col": col, "size":i+1, "orientation": "h"})
             else:
                 return possibilities
         return possibilities
@@ -324,7 +324,7 @@ class Board:
         for i in range(4):
             if (not self.is_cell_water()):    
                 #! É importante garantir que há volta de todos os outros barcos, temos sempre agua
-                possibilities.append({row: row, col: col, size:i+1, orientation: "v"})
+                possibilities.append({"row": row, "col": col, "size": i+1, "orientation": "v"})
             else:
                 return possibilities
         return possibilities
