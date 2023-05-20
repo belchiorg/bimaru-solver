@@ -68,7 +68,6 @@ class Board:
 
         #* Adds the hints to the board
         for hint in hints:
-            print(hint)
             # hint template: [row, col, val]
             self.insert_hint(hint[0], hint[1], hint[2])
 
@@ -136,7 +135,6 @@ class Board:
             if rowText[0] != "ROW":
                 raise ValueError()
             rows = [eval(i) for i in rowText[1:]]
-            print(rows)
             return rows
 
         def read_cols():
