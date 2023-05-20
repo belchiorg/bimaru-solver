@@ -75,7 +75,8 @@ class Board:
     def __init__(self,rows:list, cols:list , row_completed: list, col_completed: list, hints: list):
 
         #* Initializes a blank board
-        self.board = [[None] * len(cols)] * len(rows)
+        self.board = [[None] * len(cols) for i in range(len(rows))]
+        self.board[0][0] = 'W'
 
         #* Adds the rows and cols to the board
         self.rows = rows
@@ -108,15 +109,15 @@ class Board:
     
 
     def insert_hint(self, row: int, col: int, val: str):
-            """Insere uma dica no tabuleiro."""
-            if(val != 'W'):
-                self.rows[row] = self.rows[row] - 1
-                self.cols[col] = self.cols[col] - 1
-            if(val == 'C'):
-                self.row_completed[row] = self.row_completed[row] - 1
-                self.col_completed[col] = self.col_completed[col] - 1
-                
-            self.board[row][col] = val
+        """Insere uma dica no tabuleiro."""
+        if(val != 'W'):
+            self.rows[row] = self.rows[row] - 1
+            self.cols[col] = self.cols[col] - 1
+        if(val == 'C'):
+            self.row_completed[row] = self.row_completed[row] - 1
+            self.col_completed[col] = self.col_completed[col] - 1
+            
+        self.board[row][col] = val
         
 
     @staticmethod
@@ -401,6 +402,7 @@ if __name__ == "__main__":
     # Imprimir para o standard output no formato indicado.
     # TODO: Initializar o Problem, Iniciar o primeiro estado e o board
     # TODO: Usar a técnica de procura para resolver a instância
+
     board = Board.parse_instance()
     print(board.adjacent_vertical_values(3, 3))
     print(board.adjacent_horizontal_values(3, 3))
