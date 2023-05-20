@@ -408,17 +408,15 @@ if __name__ == "__main__":
     # TODO: Usar a técnica de procura para resolver a instância
 
     board = Board.parse_instance()
+
+    # This needs to be done automatically
     board.surround_cell(0, 0)
     board.surround_cell(1, 6)
     board.surround_cell(3, 2)
     board.surround_cell(6, 0)
     board.surround_cell(8, 8)
     board.surround_cell(9, 5)
-    board.fill_cols(1)
-    board.fill_cols(2)
-    board.fill_cols(3)
-    board.fill_cols(5)
-    board.fill_rows(5)
+    
     print(board.to_string())
 
 
