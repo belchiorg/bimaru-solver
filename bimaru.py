@@ -68,6 +68,7 @@ class Board:
 
         #* Adds the hints to the board
         for hint in hints:
+            print(hint)
             # hint template: [row, col, val]
             self.insert_hint(hint[0], hint[1], hint[2])
 
@@ -111,17 +112,11 @@ class Board:
             if(val != 'W'):
                 self.rows[row] = self.rows[row] - 1
                 self.cols[col] = self.cols[col] - 1
-            if (val == 'T'):
-                self.insert_hint(row+1, col, '?')
-            elif(val == 'B'):
-                self.insert_hint(row-1, col, '?')
-            elif(val == 'R'):
-                self.insert_hint(row, col+1, '?')
-            elif(val == 'L'):
-                self.insert_hint(row, col-1, '?')
-            elif(val == 'C'):
+            if(val == 'C'):
                 self.row_completed[row] = self.row_completed[row] - 1
                 self.col_completed[col] = self.col_completed[col] - 1
+                
+            self.board[row][col] = val
         
 
     @staticmethod
@@ -136,16 +131,19 @@ class Board:
             > line = stdin.readline().split()
         """
         def read_rows():
-            rows = input().split()
-            if rows[0] != "ROW":
+            rowText = input().split()
+            if rowText[0] != "ROW":
                 raise ValueError()
-            return rows[1:]
+            rows = [eval(i) for i in rowText[1:]]
+            print(rows)
+            return rows
 
         def read_cols():
-            cols = input().split()
-            if cols[0] != "COLUMN":
+            colsText = input().split()
+            if colsText[0] != "COLUMN":
                 raise ValueError("Invalid input")
-            return cols[1:]
+            cols = [eval(i) for i in colsText[1:]]
+            return cols
 
         rows = read_rows()
         cols = read_cols()
@@ -160,7 +158,7 @@ class Board:
             hint = input().split()
             if hint[0] != "HINT":
                 raise ValueError("Invalid input")
-            hint = hint[1:]
+            hint = [eval(hint[1]), eval(hint[2]), hint[3]]
             hints.append(hint)
 
         return Board(rows, cols, rows_completed, cols_completed, hints)
@@ -403,4 +401,11 @@ if __name__ == "__main__":
     # Imprimir para o standard output no formato indicado.
     # TODO: Initializar o Problem, Iniciar o primeiro estado e o board
     # TODO: Usar a técnica de procura para resolver a instância
-    pass
+    board = Board.parse_instance()
+    print(board.adjacent_vertical_values(3, 3))
+    print(board.adjacent_horizontal_values(3, 3))
+
+    print(board.adjacent_vertical_values(1, 0))
+    print(board.adjacent_horizontal_values(1, 0))
+
+
