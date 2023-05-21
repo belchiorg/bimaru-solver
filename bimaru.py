@@ -44,9 +44,6 @@ class Board:
     rows = []  # ? Este atributo diz respeito à contagem de partes de barcos por preencher por linha
     cols = []  # ? Este atributo diz respeito à contagem de partes de barcos por preencher por coluna
 
-    row_completed = []  # ? Atributo que é reduzido quando se coloca um barco completo
-    col_completed = []  # ? Atributo que é reduzido quando se coloca um barco completo
-
     # ? Este atributo diz respeito ao número de barcos por colocar em cada tipo
     boats_to_place = {4: 1, 3: 2, 2: 3, 1: 4}
 
@@ -74,7 +71,7 @@ class Board:
             # hint template: [row, col, val]
             self.insert_hint(hint[0], hint[1], hint[2])
 
-    def __init__(self, rows: list, cols: list, row_completed: list, col_completed: list, hints: list):
+    def __init__(self, rows: list, cols: list, hints: list):
 
         # * Initializes a blank board
         self.board = [[None] * len(cols) for i in range(len(rows))]
@@ -83,9 +80,6 @@ class Board:
         # * Adds the rows and cols to the board
         self.rows = rows
         self.cols = cols
-
-        self.row_completed = row_completed
-        self.col_completed = col_completed
 
         # * Adds the hints to the board
         for hint in hints:
@@ -114,8 +108,8 @@ class Board:
             self.rows[row] = self.rows[row] - 1
             self.cols[col] = self.cols[col] - 1
         if (val == 'C'):
-            self.row_completed[row] = self.row_completed[row] - 1
-            self.col_completed[col] = self.col_completed[col] - 1
+            self.rows[row] = self.rows[row] - 1
+            self.cols[col] = self.cols[col] - 1
             self.boats_to_place[1] = self.boats_to_place[1] - 1
 
         self.board[row][col] = val
@@ -150,10 +144,6 @@ class Board:
         rows = read_rows()
         cols = read_cols()
 
-        # ? Adiciona a lista de valores sem os barcos preenchidos
-        rows_completed = rows
-        cols_completed = cols
-
         hints = []
         hint_count = input()
         for i in range(int(hint_count)):
@@ -163,7 +153,7 @@ class Board:
             hint = [eval(hint[1]), eval(hint[2]), hint[3]]
             hints.append(hint)
 
-        return Board(rows, cols, rows_completed, cols_completed, hints)
+        return Board(rows, cols, hints)
 
     # TODO: Outros métodos da classe
 
@@ -227,13 +217,12 @@ class Board:
         self.board[row][col] = None
 
     def is_cell_ship(self, row: int, col: int):
-        return 0 <= row < len(self.rows) and 0 <= col < len(self.cols) \
-            and (self.board[row][col] is not None and any(self.board[row][col].upper() == x) for x in ['T', 'M', 'C', 'B', 'L', 'R', '?'])
+        return (0 <= row < len(self.rows) and 0 <= col < len(self.cols) and (self.board[row][col] is not None and any(self.board[row][col].upper() == x for x in ['T', 'M', 'C', 'B', 'L', 'R', '?'])))
 
-    def is_cell_water(self, row: int, col: int):
+    def is_cell_water(self, row: int, col: int) -> bool:
         # * For optimization purposes, we can say that any cell out of bounds is water
         return (not 0 <= row < len(self.rows) or not 0 <= col < len(self.cols)) \
-            or (self.board[row][col] is not None and any(self.board[row][col] == x) for x in ['.', '?'])
+            or (self.board[row][col] is not None and any(self.board[row][col] == x for x in ['.', '?']))
 
     def convert_cell(self, row: int, col: int):
         if (self.board[row][col] is None or self.board[row][col] == "."
@@ -329,48 +318,55 @@ class Board:
         """
         possibilities = []
 
-        if self.check_if_boat_exists(row, col, False):
-            return possibilities
+        if self.is_cell_ship(row, col):
+            if self.check_if_boat_exists(row, col, True):
+                print("boat exists")
+                return possibilities
 
         # Check if we can place the first part of the ship
         if (not self.is_cell_ship(row-1, col-1) and not self.is_cell_ship(row, col-1) and not self.is_cell_ship(row+1, col-1)):
             # Checks the column right before the boat
-            if (not self.is_cell_ship(row-1, col) and not self.is_cell_ship(row+1, col) and (self.get_value(row, col).upper() == x for x in ['L', '?'] or self.get_value(row, col) is None)):
+            if (not self.is_cell_ship(row-1, col) and not self.is_cell_ship(row+1, col) and (self.board[row][col] is None or any(x == self.board[row][col].upper() for x in ['L', '?']))):
                 # Checks the boat column
                 for i in range(1, 5):
                     if col + i > 10:
                         return possibilities
                     # Checks the next columns
                     if (not self.is_cell_ship(row-1, col+i) and not self.is_cell_ship(row, col+i) and not self.is_cell_ship(row+1, col+i)):
-                        if (self.get_value(row, col+i) is None or self.get_value(row, col+i).upper() == x for x in ['R', '?']):
+                        if (self.board[row][col+i-1] is None or self.board[row][col+i-1].upper() == x for x in ['R', '?']):
                             possibilities.append(
                                 {"row": row, "col": col, "size": i, "orientation": "h"})
         return possibilities
 
     def attempt_boat_vertically(self, row: int, col: int):
+        print("attempt_boat_vertically: ", row, col)
 
         possibilities = []
 
-        if self.check_if_boat_exists(row, col, True):
-            return possibilities
+        if self.is_cell_ship(row, col):
+            if self.check_if_boat_exists(row, col, True):
+                print("boat exists")
+                return possibilities
 
         # Check if we can place the first part of the ship
         if (not self.is_cell_ship(row-1, col-1) and not self.is_cell_ship(row-1, col) and not self.is_cell_ship(row-1, col+1)):
+            print("Passou 1")
             # Checks the column right before the boat
-            if (not self.is_cell_ship(row, col-1) and not self.is_cell_ship(row, col+1) and (self.get_value(row, col).upper() == x for x in ['L', '?'] or self.get_value(row, col) is None)):
+            if (not self.is_cell_ship(row, col-1) and not self.is_cell_ship(row, col+1) and (self.board[row][col] is None or any(x == self.board[row][col].upper() for x in ['T', '?']))):
+                print("Passou 2")
                 # Checks the boat column
                 for i in range(1, 5):
                     if row + i > 10:
                         return possibilities
                     # Checks the next columns
                     if (not self.is_cell_ship(row+1, col-1) and not self.is_cell_ship(row+i, col) and not self.is_cell_ship(row+i, col+1)):
-                        if (self.get_value(row+i, col) is None or self.get_value(row+1, col).upper() == x for x in ['B', '?']):
+                        if ((self.board[row+i-1][col] is None or self.board[row+i-1][col].upper() == x for x in ['B', '?'])and i > 1):
                             possibilities.append(
                                 {"row": row, "col": col, "size": i, "orientation": "v"})
         return possibilities
 
     def check_if_boat_exists(self, row: int, col: int, vertical: bool):
-        if get_value(row, int) == 'C':
+        if self.get_value(row, col) == 'C':
             return True
         if vertical:
             if self.get_value(row, col).upper() == 'T':
@@ -431,6 +427,7 @@ class Board:
             # ? Talvez colocar um erro para o caso de estar out of bounds?
 
             self.set_cell(row+adjacent[0][0], col+adjacent[0][1], True)
+            self.surround_cell(row+adjacent[0][0], col+adjacent[0][1])
 
             # * Depois de set_cell, a peça do barco pode transformar numa extremidade do barco
             if self.board[row+adjacent[0][0]][col+adjacent[0][1]].upper() == adjacent[1]:
@@ -440,12 +437,10 @@ class Board:
 
     def get_actions(self):
         actions = []
-        for row in self.board:
-            for col in self.board[row]:
-                if self.board[row][col] == None:
-                    #! Falta verificar os espaços com barcos
-                    actions.append(self.attempt_boat_horizontally)
-                    actions.append(self.attempt_boat_vertically)
+        for row in range(len(self.board)):
+            for col in range (len(self.board[row])):
+                actions.extend(self.attempt_boat_horizontally(row, col))
+                actions.extend(self.attempt_boat_vertically(row, col))
         return actions
 
     def prepare_board(self):
@@ -531,12 +526,7 @@ if __name__ == "__main__":
 
     board = Board.parse_instance()
 
-    # This needs to be done automatically
-    board.surround_cell(0, 0)
-    board.surround_cell(1, 6)
-    board.surround_cell(3, 2)
-    board.surround_cell(6, 0)
-    board.surround_cell(8, 8)
-    board.surround_cell(9, 5)
-
+    for action in board.get_actions():
+        print(action)
+    
     print(board.to_string())
