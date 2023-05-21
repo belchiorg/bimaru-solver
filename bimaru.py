@@ -47,6 +47,8 @@ class Board:
     row_completed = [] #? Atributo que é reduzido quando se coloca um barco completo
     col_completed = [] #? Atributo que é reduzido quando se coloca um barco completo
 
+    boats_to_place = { 4: 1, 3: 2, 2: 3, 1: 4 } #? Este atributo diz respeito ao número de barcos por colocar em cada tipo
+
     def __init__(self):
         for i in range(10):
             self.filled_rows.append(0)
@@ -115,8 +117,11 @@ class Board:
         if(val == 'C'):
             self.row_completed[row] = self.row_completed[row] - 1
             self.col_completed[col] = self.col_completed[col] - 1
+            self.boats_to_place[1] = self.boats_to_place[1] - 1
             
         self.board[row][col] = val
+
+        self.surround_cell(row, col) #? Colocar esta função ao inicializar?
         
 
     @staticmethod
@@ -225,12 +230,12 @@ class Board:
 
     def is_cell_ship(self, row: int, col: int):
         return 0 <= row < len(self.rows) and 0 <= col < len(self.cols) \
-            and any((self.board[row][col] is not None and self.board[row][col].upper() == x) for x in ['T', 'M', 'C', 'B', 'L', 'R', '?'])
+            and (self.board[row][col] is not None and any(self.board[row][col].upper() == x) for x in ['T', 'M', 'C', 'B', 'L', 'R', '?'])
     
     def is_cell_water(self, row: int, col: int):
         #* For optimization purposes, we can say that any cell out of bounds is water
         return (not 0 <= row < len(self.rows) or not 0 <= col < len(self.cols)) \
-            or (self.board[row][col] is not None and self.board[row][col] == '.')
+            or (self.board[row][col] is not None and any(self.board[row][col] == x) for x in ['.', '?'])
     
     def convert_cell(self, row: int, col: int):
         if (self.board[row][col] is None or self.board[row][col] == "." \
@@ -326,6 +331,57 @@ class Board:
                 return possibilities
         return possibilities
     
+    def attempt_complete_boat_hint(self, row: int, col: int):
+        #? Lógica inicial: vai usar uma hint para colocar outra parte do barco que seja óbvio que irá
+        #? usar. Caso a parte do barco seja a outra extremidade, reduz o número de barcos do tipo gerado
+        if not self.is_cell_ship(row, col):
+            return
+        
+        #* Caso da hint ser o meio do barco (deve-se ver em que orientação se deve colocar o barco)
+        if self.board[row][col].upper() == 'M':
+            vertical = self.adjacent_horizontal_values(row, col)
+            horizontal = self.adjacent_vertical_values(row, col)
+
+            #* Caso vertical
+            if vertical == (None, None) and (self.is_cell_water(horizontal[0]) or self.is_cell_water(horizontal[1])):
+                self.set_cell(row-1, col, True)
+                self.set_cell(row+1, col, True)
+
+                #* Depois de set_cell, a peça do barco pode transformar numa extremidade do barco
+                if self.board[row-1][col].upper() == 'T' and self.board[row+1][col].upper() == 'B':
+                    self.boats_to_place[3] = self.boats_to_place[3] - 1
+
+            #* Caso horizontal
+            elif horizontal == (None, None) and (self.is_cell_water(vertical[0]) or self.is_cell_water(vertical[1])):
+                self.set_cell(row, col-1, True)
+                self.set_cell(row, col+1, True)
+
+                #* Depois de set_cell, a peça do barco pode transformar numa extremidade do barco
+                if self.board[row][col-1].upper() == 'L' and self.board[row][col+1].upper() == 'R':
+                    self.boats_to_place[3] = self.boats_to_place[3] - 1
+        
+        #* Caso de ser uma extremidade do barco
+        elif not any(self.board[row][col].upper() == x for x in ['C', '?']):
+            #* Verifica onde deve estar o adjacente e qual o outcome esperado 
+            adjacent_cases = {
+                'T': ((1, 0), 'B'),
+                'B': ((-1, 0), 'T'),
+                'L': ((0, 1), 'R'),
+                'R': ((0, -1), 'L')
+            }
+            
+            adjacent = adjacent_cases[self.board[row][col].upper()]
+
+            #? Talvez colocar um erro para o caso de estar out of bounds?
+
+            self.set_cell(row+adjacent[0][0], col+adjacent[0][1], True)
+
+            #* Depois de set_cell, a peça do barco pode transformar numa extremidade do barco
+            if self.board[row+adjacent[0][0]][col+adjacent[0][1]].upper() == adjacent[1]:
+                self.boats_to_place[2] = self.boats_to_place[2] - 1
+
+            #? Talvez adicionar uma função para quando a peça colocada fica no meio de duas peças?
+    
     def get_actions(self):
         actions = []
         for row in self.board:
@@ -338,7 +394,15 @@ class Board:
 
     def prepare_board(self):
         #* Função que prepara o tabuleiro para ser jogado, preenchendo os espaços vazios com água
-        self.fill_rows()
+
+        #* Assume-se que todas as hints já foram circundada com água
+        rows_to_fill = [i for i, x in enumerate(self.rows) if x == 0]
+        for i in rows_to_fill:
+            self.fill_rows(i)
+
+        cols_to_fill = [i for i, x in enumerate(self.cols) if x == 0]
+        for i in cols_to_fill:
+            self.fill_rows(i)
         self.fill_cols()
 
     def to_string(self):
