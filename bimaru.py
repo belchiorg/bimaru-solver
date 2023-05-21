@@ -304,13 +304,31 @@ class Board:
             self.set_cell(row+rel_pos[0], col+rel_pos[1], False)
             
     def attempt_boat_horizontally(self, row: int, col:int):
-        #? Logica inicial: Vai testar se dá para colocar barcos horizontalmente na pos (x,y), se conseguir, junta a uma list. 
-        #? Talvez o melhor fosse dar return a um tuple, mas em objeto ficou mais facil para "representar" e talvez perceberes o que eu tinha pensado
 
         possibilities = []
 
+        #Check if we can place the first part of the ship
+
         for i in range(4):
-            if (not self.is_cell_water()):    
+            if (not is_cell_ship(row-1, col-1) and not is_cell_ship(row, col-1) and not is_cell_ship(row+1, col-1)):
+                #Checks the column right before the boat
+                if (not is_cell_ship(row-1, col) and not is_cell_ship(row, col) and not is_cell_ship(row+1, col)):
+                    #Checks the boat column
+                    if (not is_cell_ship(row-1, col+1) and is_cell_ship(row+1, col+1)):
+                        #Checks the next column
+
+
+
+
+
+        #* Some more complexity to identify cases where hints were given
+        if (not self.is_cell_water(row, col) or self.board[row][col].lower() == 'l'):
+            possibilities.append({"row": row, "col": col, "size":1, "orientation": "h"})
+        else:
+            return possibilities
+
+        for i in range(1,4):
+            if (not self.is_cell_water(row, col)):    
                 #! É importante garantir que há volta de todos os outros barcos, temos sempre agua
                 possibilities.append({"row": row, "col": col, "size":i+1, "orientation": "h"})
             else:
