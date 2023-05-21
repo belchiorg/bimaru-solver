@@ -458,7 +458,7 @@ class Board:
 
     def to_string(self):
         #! Esta função apenas funciona quando o board está preenchido!
-        board_to_str = self.board.copy()
+        board_to_str = [self.board[i].copy() for i in range(len(self.rows))]
         rows_as_strings = []
 
         for i in range(len(self.rows)):
