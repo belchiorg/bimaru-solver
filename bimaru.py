@@ -328,14 +328,27 @@ class Board:
             # Checks the column right before the boat
             if (not self.is_cell_ship(row-1, col) and not self.is_cell_ship(row+1, col) and (self.board[row][col] is None or any(x == self.board[row][col].upper() for x in ['L', '?']))):
                 # Checks the boat column
+                rows = self.rows.copy()
+                cols = self.cols.copy()
                 for i in range(1, 5):
                     if col + i > 10:
                         return possibilities
                     # Checks the next columns
                     if (not self.is_cell_ship(row-1, col+i) and not self.is_cell_ship(row, col+i) and not self.is_cell_ship(row+1, col+i)):
-                        if (self.board[row][col+i-1] is None or self.board[row][col+i-1].upper() == x for x in ['R', '?']):
+                        if (self.is_cell_water(row, col+i-1)):
+                            return possibilities
+                        elif (self.board[row][col+i-1] is None):
+                            if rows[row]-1 < 0 or cols[col+i-1]-1 < 0:
+                                rows[row] -= 1
+                                cols[col+i-1] -= 1
+                                return possibilities
                             possibilities.append(
                                 {"row": row, "col": col, "size": i, "orientation": "h"})
+                        elif (self.board[row][col+i-1].upper() == x for x in ['R', '?']):
+                            possibilities.append(
+                                {"row": row, "col": col, "size": i, "orientation": "h"})
+                    else:
+                        return possibilities
         return possibilities
 
     def attempt_boat_vertically(self, row: int, col: int):
@@ -350,19 +363,33 @@ class Board:
 
         # Check if we can place the first part of the ship
         if (not self.is_cell_ship(row-1, col-1) and not self.is_cell_ship(row-1, col) and not self.is_cell_ship(row-1, col+1)):
-            print("Passou 1")
+
             # Checks the column right before the boat
             if (not self.is_cell_ship(row, col-1) and not self.is_cell_ship(row, col+1) and (self.board[row][col] is None or any(x == self.board[row][col].upper() for x in ['T', '?']))):
                 print("Passou 2")
                 # Checks the boat column
+                rows_val = self.rows.copy()
+                cols_val = self.cols.copy()
                 for i in range(1, 5):
                     if row + i > 10:
                         return possibilities
                     # Checks the next columns
                     if (not self.is_cell_ship(row+1, col-1) and not self.is_cell_ship(row+i, col) and not self.is_cell_ship(row+i, col+1)):
-                        if ((self.board[row+i-1][col] is None or self.board[row+i-1][col].upper() == x for x in ['B', '?'])and i > 1):
+                        if (self.is_cell_water(row, col+i-1)):
+                            return possibilities
+                        elif (self.board[row+i-1][col] is None ):
+                            if rows_val[row+i-1]-1 < 0 or cols_val[col]-1 < 0:
+                                rows_val[row+i-1] -= 1
+                                cols_val[col] -= 1
+                                return possibilities
                             possibilities.append(
                                 {"row": row, "col": col, "size": i, "orientation": "v"})
+                        elif (self.board[row+i-1][col].upper() == x for x in ['B', '?']):
+                            possibilities.append(
+                                {"row": row, "col": col, "size": i, "orientation": "v"})
+                    else:
+                        return possibilities
+
         return possibilities
 
     def check_if_boat_exists(self, row: int, col: int, vertical: bool):
