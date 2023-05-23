@@ -333,6 +333,8 @@ class Board:
                 rows = self.rows.copy()
                 cols = self.cols.copy()
                 for i in range(1, 5):
+                    if self.boats_to_place[i] == 0:
+                        continue
                     if col + i > 10:
                         return possibilities
                     # Checks the next columns
@@ -368,11 +370,12 @@ class Board:
 
             # Checks the column right before the boat
             if (not self.is_cell_ship(row, col-1) and not self.is_cell_ship(row, col+1) and (self.board[row][col] is None or any(x == self.board[row][col].upper() for x in ['T', '?']))):
-                print("Passou 2")
                 # Checks the boat column
                 rows_val = self.rows.copy()
                 cols_val = self.cols.copy()
                 for i in range(1, 5):
+                    if self.boats_to_place[i] == 0:
+                        continue
                     if row + i > 10:
                         return possibilities
                     # Checks the next columns
