@@ -206,8 +206,29 @@ class Board:
             self.cols[col] = self.cols[col] - 1
 
     def set_cell_type(self, row: int, col: int, cell_type: str):
+        if (self.board[row][col] is not None and 'A' <= self.board[row][col] <= 'Z'):
+            # ? Lançar erro aqui, por não se poder mudar a célula?
+            return
+        
+
+        self.board[row][col] = cell_type
+
+        # Check if cell_type is a part of a ship, if so, decrements the row and col values
+        if (any(cell_type.upper() == x for x in ['T', 'M', 'C', 'B', 'L', 'R', '?'])):
+            self.rows[row] = self.rows[row] - 1
+            self.cols[col] = self.cols[col] - 1
+
+            #* Belchior, suponho que não seja necessário usar o convert_cell para converter 
+            #* a parte do barco noutra, dependendo dos blocos em redor.
+            #* No entanto, coloquei esta função abaixo para preencher as células à volta com água 
+            #* (as que fazem sentido colocar). É isto que se pretende?   - Gonçalo
+            self.surround_cell(row, col)
+
+
 
     def erase_cell(self, row: int, col: int):
+        #! Atenção: Esta função não reverte as células à volta que são preenchidas com água, 
+        #! caso tenha sido colocada uma parte de um navio!
         if (self.board[row][col] is not None and 'A' <= self.board[row][col] <= 'Z'):
             # ? Lançar erro aqui, por não se poder mudar a célula?
             return
