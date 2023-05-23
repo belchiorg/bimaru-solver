@@ -22,7 +22,7 @@ class BimaruState:
     state_id = 0
 
     def __init__(self, board):
-        self.board = board
+        self.board = board.deepcopy()
         self.id = BimaruState.state_id
         BimaruState.state_id += 1
 
@@ -34,6 +34,11 @@ class BimaruState:
     # * Aqui já é viagem da minha cabeça
     def get_actions(self):
         self.board.get_actions()
+
+    def get_result(self, action) -> "BimaruState":
+        new_state = BimaruState(self.board)
+        new_state.board.result(action)
+        return new_state
 
 
 class Board:
@@ -199,6 +204,8 @@ class Board:
             self.convert_cell(row, col)
             self.rows[row] = self.rows[row] - 1
             self.cols[col] = self.cols[col] - 1
+
+    def set_cell_type(self, row: int, col: int, cell_type: str):
 
     def erase_cell(self, row: int, col: int):
         if (self.board[row][col] is not None and 'A' <= self.board[row][col] <= 'Z'):
@@ -515,6 +522,38 @@ class Board:
                 last_rows_to_fill = rows_to_fill.copy()
                 last_cols_to_fill = cols_to_fill.copy()
 
+
+    def insert_boat(self, action):
+        """
+        Function that inserts a boat in the board, given an action \n
+        example_action = {"row": 4, "col": 3, "size": 2, "orientation": "v"}
+        """
+        row = action["row"]
+        col = action["col"]
+        size = action["size"]
+        orientation = action["orientation"]
+
+        if size == 1:
+            self.set_cell_type(row, col, 'c')
+            self.boats_to_place[1] -= 1
+            return
+    
+        for i in range(1,size-1):
+            if orientation == 'h':
+                self.set_cell_type(row, col+i, 'm')
+            elif orientation == 'v':
+                self.set_cell_type(row+i, col, 'm')
+        
+        if orientation == 'h':
+            self.set_cell_type(row, col, 'l')
+            self.set_cell_type(row, col+size-1, 'r')
+
+        elif orientation == 'v':
+            self.set_cell_type(row, col, 't')
+            self.set_cell_type(row+size-1, col, 'b')
+
+        self.boats_to_place[size] -= 1
+
         
 
     def to_string(self):
@@ -551,7 +590,10 @@ class Bimaru(Problem):
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state)."""
+
+        self
         # TODO
+        
         pass
 
     def goal_test(self, state: BimaruState):
@@ -564,6 +606,10 @@ class Bimaru(Problem):
 
         for i in range(len(state.board.cols)):
             if state.board.cols[i] != 0:
+                return False
+            
+        for i in range(1,5):
+            if state.board.boats_to_place[i] != 0:
                 return False
 
         return True
