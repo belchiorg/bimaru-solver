@@ -543,6 +543,9 @@ class Board:
                 last_rows_to_fill = rows_to_fill.copy()
                 last_cols_to_fill = cols_to_fill.copy()
 
+        # As hints deixam de ser necessárias, por isso liberta-se espaço
+        del self.hints
+
 
     def insert_boat(self, action):
         """
