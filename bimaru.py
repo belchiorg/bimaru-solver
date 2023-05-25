@@ -580,7 +580,8 @@ class Board:
 
         self.boats_to_place[size] -= 1
 
-        
+    def check_can_place_boat(self, actions: list, size: int):
+        return any(actions[i].size == size for i in range(len(actions)))
 
     def to_string(self):
         #! Esta função apenas funciona quando o board está preenchido!
