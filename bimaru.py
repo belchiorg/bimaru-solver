@@ -584,6 +584,7 @@ class Board:
 
     def to_string(self):
         #! Esta função apenas funciona quando o board está preenchido!
+        #! Mudar para a submissão final
         board_to_str = [self.board[i].copy() for i in range(len(self.rows))]
         rows_as_strings = []
 
@@ -594,7 +595,22 @@ class Board:
 
             rows_as_strings.append("".join(board_to_str[i]))
 
-        return ("\n".join(rows_as_strings))
+        return ("\n".join(rows_as_strings) + "\n")
+    
+    def to_string_debug(self):
+        #! Esta função apenas funciona quando o board está preenchido!
+        #! Mudar para a submissão final
+        board_to_str = [self.board[i].copy() for i in range(len(self.rows))]
+        rows_as_strings = []
+
+        for i in range(len(self.rows)):
+            for j in range(len(self.cols)):
+                if board_to_str[i][j] is None:
+                    board_to_str[i][j] = '_'
+
+            rows_as_strings.append("".join(board_to_str[i] + [" ", str(self.rows[i])]))
+
+        return ("\n".join(rows_as_strings) + "\n" + "".join(str(self.cols[j]) for j in range(len(self.cols))))
 
     # TODO: outros metodos da classe
 
