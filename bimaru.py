@@ -42,6 +42,8 @@ class BimaruState:
     def get_result(self, action) -> "BimaruState":
         new_state = BimaruState(copy.deepcopy(self.board))
         new_state.board.place_boat(action)
+        new_state.board.prepare_board()
+        print(new_state.board.to_string_debug())
         return new_state
 
 
@@ -728,7 +730,7 @@ if __name__ == "__main__":
     print(problem.initial.board.to_string_debug())
     print("\n\n =================== \n\n")
 
-    print(depth_first_tree_search(problem).board.to_string_debug())
+    print(depth_first_tree_search(problem))
     
     
     # print(board.to_string())
