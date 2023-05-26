@@ -57,6 +57,8 @@ class Board:
 
     hints = [] #* Esta veriável é só usada no início. Quando o algoritmo chega à parte das actions
                #* e do result, o atributo é apagado (para não ocupar espaço).
+    
+    boats_to_place = {}
 
     def __init__(self):
         for i in range(10):
@@ -250,10 +252,14 @@ class Board:
             or (self.board[row][col] is not None and any(self.board[row][col] == x for x in ['.', 'W']))
 
     def convert_cell(self, row: int, col: int):
+        '''Converts a cell to another one depending on the adjacent cells, and returns True
+        if the state of the cell has changed'''
         if (self.board[row][col] is None or self.board[row][col] == "."
                 or 'A' <= self.board[row][col] <= 'Z'):
             # Não alterar posições que não tenham barcos colocados pelo agente
-            return
+            return False
+        
+        before_conversion = self.board[row][col]
 
         # Os 8 possíveis casos para partes do barco, consoante as células adjacentes
         if self.is_cell_ship(row-1, col):
@@ -291,6 +297,9 @@ class Board:
 
         else:  # Impossível de saber a posição relativa
             self.board[row][col] = '?'
+
+        # Return whether the state has changed or not
+        return before_conversion != self.board[row][col]
 
     def surround_cell(self, row: int, col: int):
         """This function takes two coordinates for a cell with a part of a ship on it
@@ -468,8 +477,8 @@ class Board:
                 self.set_cell(row+1, col, True)
 
                 # * Depois de set_cell, a peça do barco pode transformar numa extremidade do barco
-                if self.board[row-1][col].upper() == 'T' and self.board[row+1][col].upper() == 'B':
-                    self.boats_to_place[3] = self.boats_to_place[3] - 1
+                #if self.board[row-1][col].upper() == 'T' and self.board[row+1][col].upper() == 'B':
+                 #   self.boats_to_place[3] = self.boats_to_place[3] - 1
             
                 return True                
 
@@ -479,8 +488,8 @@ class Board:
                 self.set_cell(row, col+1, True)
 
                 # * Depois de set_cell, a peça do barco pode transformar numa extremidade do barco
-                if self.board[row][col-1].upper() == 'L' and self.board[row][col+1].upper() == 'R':
-                    self.boats_to_place[3] = self.boats_to_place[3] - 1
+                #if self.board[row][col-1].upper() == 'L' and self.board[row][col+1].upper() == 'R':
+                #    self.boats_to_place[3] = self.boats_to_place[3] - 1
                 
                 return True
 
@@ -501,8 +510,8 @@ class Board:
             self.set_cell(row+adjacent[0][0], col+adjacent[0][1], True)
 
             # * Depois de set_cell, a peça do barco pode transformar numa extremidade do barco
-            if self.board[row+adjacent[0][0]][col+adjacent[0][1]].upper() == adjacent[1]:
-                self.boats_to_place[2] = self.boats_to_place[2] - 1
+            #if self.board[row+adjacent[0][0]][col+adjacent[0][1]].upper() == adjacent[1]:
+            #    self.boats_to_place[2] = self.boats_to_place[2] - 1
 
             # ? Talvez adicionar uma função para quando a peça colocada fica no meio de duas peças?
             return True
@@ -522,7 +531,46 @@ class Board:
                 filtered_actions = list(filter(lambda x: x['size'] == boat_size, actions))
                 return filtered_actions
         return []
+    
+    def update_boats_to_place(self):
+        '''Updates the boats_to_place variable to reflect on the already placed boats.'''
+        to_place = { 4: 1, 3: 2, 2: 3, 1: 4 }
+        for i in range(len(self.rows)):
+            size = 0
+            for j in range(len(self.cols)):
+                if (self.board[i][j] is None):
+                    size = 0
+                    continue
 
+                if (self.board[i][j].upper() == 'L' and size == 0) \
+                or (self.board[i][j].upper() == 'M' and size > 0):
+                    size = size + 1
+                elif self.board[i][j].upper() == 'R' and size > 0:
+                    to_place[size + 1] = to_place[size + 1] - 1
+                    size = 0
+                elif self.board[i][j].upper() == 'C' and size == 0:
+                    to_place[1] = to_place[1] - 1
+                else:
+                    size = 0
+
+        for i in range(len(self.cols)):
+            size = 0
+            for j in range(len(self.rows)):
+                if (self.board[j][i] is None):
+                    size = 0
+                    continue
+                
+                if (self.board[j][i].upper() == 'T' and size == 0) \
+                or (self.board[j][i].upper() == 'M' and size > 0):
+                    size = size + 1
+                elif self.board[j][i].upper() == 'B' and size > 0:
+                    to_place[size + 1] = to_place[size + 1] - 1
+                    size = 0
+                else:
+                    size = 0
+
+        self.boats_to_place = to_place
+        
     def prepare_board(self):
         # * Função que prepara o tabuleiro para ser jogado, preenchendo os espaços vazios com água
 
@@ -530,7 +578,7 @@ class Board:
         last_cols_to_fill = []
         # Estas funções têm de ser executadas várias vezes para garantir que o board fica preparado
         while True:
-            print(board.to_string(), "\n\n----\n")
+            print(board.to_string_debug(), "\n\n----\n")
             # * Coloca partes de barco que podem ser inferidas pelas hints
             i = 0
             while i < len(self.hints):
@@ -558,6 +606,9 @@ class Board:
 
         # As hints deixam de ser necessárias, por isso liberta-se espaço
         #del self.hints
+        self.update_boats_to_place()
+        print("dgfhsdkjhfjk")
+        print(board.to_string_debug())
 
 
     def insert_boat(self, action):
@@ -620,8 +671,11 @@ class Board:
                     board_to_str[i][j] = '_'
 
             rows_as_strings.append("".join(board_to_str[i] + [" ", str(self.rows[i])]))
+        
+        rows_as_strings.append("".join(str(self.cols[j]) for j in range(len(self.cols))))
+        rows_as_strings.append(str(self.boats_to_place))
 
-        return ("\n".join(rows_as_strings) + "\n" + "".join(str(self.cols[j]) for j in range(len(self.cols))))
+        return ("\n".join(rows_as_strings) + "\n")
 
     # TODO: outros metodos da classe
 
