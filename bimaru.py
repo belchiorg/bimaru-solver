@@ -17,12 +17,15 @@ from search import (
     recursive_best_first_search,
 )
 
+import copy
+
 
 class BimaruState:
     state_id = 0
+    board: "Board"
 
     def __init__(self, board):
-        self.board = board.deepcopy()
+        self.board = board
         self.id = BimaruState.state_id
         BimaruState.state_id += 1
 
@@ -36,8 +39,8 @@ class BimaruState:
         self.board.get_actions()
 
     def get_result(self, action) -> "BimaruState":
-        new_state = BimaruState(self.board)
-        new_state.board.result(action)
+        new_state = BimaruState(copy.deepcopy(self.board))
+        new_state.board.place_boat(action)
         return new_state
 
 
@@ -52,9 +55,6 @@ class Board:
     hints = [] #* Esta veriável é só usada no início. Quando o algoritmo chega à parte das actions
                #* e do result, o atributo é apagado (para não ocupar espaço).
 
-    # ? Este atributo diz respeito ao número de barcos por colocar em cada tipo
-    boats_to_place = {4: 1, 3: 2, 2: 3, 1: 4}
-
     def __init__(self):
         for i in range(10):
             self.filled_rows.append(0)
@@ -65,7 +65,7 @@ class Board:
                 row.append(None)
             self.board.append(row)
 
-    def __init__(self, rows: list, cols: list, hints: list):
+    def __init__(self, rows: list, cols: list, hints: list, boats: dict):
 
         # * Initializes a blank board
         self.board = [[None] * len(cols) for i in range(len(rows))]
@@ -76,6 +76,8 @@ class Board:
 
         # * Adds the hints (to be used temporarily)
         self.hints = hints
+
+        self.boats_to_place = boats
 
         # * Adds the hints to the board
         for hint in hints:
@@ -147,7 +149,7 @@ class Board:
             hint = [eval(hint[1]), eval(hint[2]), hint[3]]
             hints.append(hint)
 
-        return Board(rows, cols, hints)
+        return Board(rows, cols, hints, {4: 1, 3: 2, 2: 3, 1: 4})
 
     # TODO: Outros métodos da classe
 
@@ -222,6 +224,7 @@ class Board:
             #* a parte do barco noutra, dependendo dos blocos em redor.
             #* No entanto, coloquei esta função abaixo para preencher as células à volta com água 
             #* (as que fazem sentido colocar). É isto que se pretende?   - Gonçalo
+            #* Sim, é isso mesmo. - Belchior
             self.surround_cell(row, col)
 
 
@@ -510,7 +513,11 @@ class Board:
                 if not self.is_cell_water(row, col):
                     actions.extend(self.attempt_boat_horizontally(row, col))
                     actions.extend(self.attempt_boat_vertically(row, col))
-        return actions
+        for boat_size in range(4,0, -1):
+            print(boat_size)
+            if self.boats_to_place[boat_size] > 0:
+                return filter(lambda x: x['size'] == boat_size, actions)
+        return []
 
     def prepare_board(self):
         # * Função que prepara o tabuleiro para ser jogado, preenchendo os espaços vazios com água
@@ -614,12 +621,52 @@ class Board:
 
     # TODO: outros metodos da classe
 
+    def place_boat(self, action):
+        """
+        Places a boat according to the action passed as argument
+        """
+        row = action["row"]
+        col = action["col"]
+        size = action["size"]
+        orientation = action["orientation"]
+
+        if size == 1:
+            self.set_cell_type(row, col, 'c')
+            self.boats_to_place[1] -= 1
+            return
+        
+        
+        if orientation == 'h':
+            if not self.get_value(row, col) == 'L':
+                self.set_cell_type(row, col, 'l')
+            for i in range(1, size-1):
+                if not self.get_value(row, col+i) == 'M':
+                    self.set_cell_type(row, col+i, 'm')
+            if not self.get_value(row, col+size-1) == 'R':
+                self.set_cell_type(row, col+size-1, 'r')
+
+        else:
+            if not self.get_value(row, col) == 'T':
+                self.set_cell_type(row, col, 't')
+            for i in range(1, size-1):
+                if not self.get_value(row+i, col) == 'M':
+                    self.set_cell_type(row+i, col, 'm')
+            if not self.get_value(row+size-1, col) == 'B':
+                self.set_cell_type(row+size-1, col, 'b')
+        
+        self.boats_to_place[size] -= 1
+        return
+
+        
+        
+
 
 class Bimaru(Problem):
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
         # TODO
-        pass
+        self.initial = BimaruState(board)
+        return self
 
     def actions(self, state: BimaruState):
         """Retorna uma lista de ações que podem ser executadas a
@@ -633,10 +680,7 @@ class Bimaru(Problem):
         das presentes na lista obtida pela execução de
         self.actions(state)."""
 
-        self
-        # TODO
-        
-        pass
+        return state.get_result(action)
 
     def goal_test(self, state: BimaruState):
         """Retorna True se e só se o estado passado como argumento é
@@ -673,7 +717,16 @@ if __name__ == "__main__":
     # TODO: Initializar o Problem, Iniciar o primeiro estado e o board
     # TODO: Usar a técnica de procura para resolver a instância
 
+
     board = Board.parse_instance()
+
+    state = BimaruState(board)
+
+    new_state = state.get_result({"row": 0, "col": 0, "size": 4, "orientation": 'v'})
+
+    print("New state:")
+    print(new_state.board.to_string_debug())
+    print("=\n=\n=\n=\n=\n")
 
     #for action in board.get_actions():
     #    print(action)
