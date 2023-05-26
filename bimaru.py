@@ -775,25 +775,6 @@ if __name__ == "__main__":
     # TODO: Initializar o Problem, Iniciar o primeiro estado e o board
     # TODO: Usar a técnica de procura para resolver a instância
 
+    problem = Bimaru(Board.parse_instance())
 
-    board = Board.parse_instance()
-
-    problem = Bimaru(board)
-
-    print("Problem:")
-    print(problem.initial.board.to_string_debug())
-    print("\n\n =================== \n\n")
-
-    print(depth_first_tree_search(problem))
-    
-    
-    # print(board.to_string())
-
-    # print("Preparing board")
-
-    # board.prepare_board()
-
-    # print("Prepared:")
-    # for action in board.get_actions():
-    #     print(action)
-    # print(board.to_string_debug())
+    print(depth_first_tree_search(problem).state.board.to_string())
