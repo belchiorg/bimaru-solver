@@ -687,4 +687,4 @@ if __name__ == "__main__":
     print("Prepared:")
     for action in board.get_actions():
         print(action)
-    print(board.to_string())
+    print(board.to_string_debug())
