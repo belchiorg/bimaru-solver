@@ -26,6 +26,7 @@ class BimaruState:
 
     def __init__(self, board):
         self.board = board
+        self.board.prepare_board()
         self.id = BimaruState.state_id
         BimaruState.state_id += 1
 
@@ -36,7 +37,7 @@ class BimaruState:
 
     # * Aqui já é viagem da minha cabeça
     def get_actions(self):
-        self.board.get_actions()
+        return self.board.get_actions()
 
     def get_result(self, action) -> "BimaruState":
         new_state = BimaruState(copy.deepcopy(self.board))
@@ -506,7 +507,7 @@ class Board:
 
         return False
 
-    def get_actions(self):
+    def get_actions(self) -> list:
         actions = []
         for row in range(len(self.board)):
             for col in range (len(self.board[row])):
@@ -516,7 +517,8 @@ class Board:
         for boat_size in range(4,0, -1):
             print(boat_size)
             if self.boats_to_place[boat_size] > 0:
-                return filter(lambda x: x['size'] == boat_size, actions)
+                filtered_actions = list(filter(lambda x: x['size'] == boat_size, actions))
+                return filtered_actions
         return []
 
     def prepare_board(self):
@@ -553,7 +555,7 @@ class Board:
                 last_cols_to_fill = cols_to_fill.copy()
 
         # As hints deixam de ser necessárias, por isso liberta-se espaço
-        del self.hints
+        #del self.hints
 
 
     def insert_boat(self, action):
@@ -666,7 +668,7 @@ class Bimaru(Problem):
         """O construtor especifica o estado inicial."""
         # TODO
         self.initial = BimaruState(board)
-        return self
+        return
 
     def actions(self, state: BimaruState):
         """Retorna uma lista de ações que podem ser executadas a
@@ -720,24 +722,22 @@ if __name__ == "__main__":
 
     board = Board.parse_instance()
 
-    state = BimaruState(board)
+    problem = Bimaru(board)
 
-    new_state = state.get_result({"row": 0, "col": 0, "size": 4, "orientation": 'v'})
+    print("Problem:")
+    print(problem.initial.board.to_string_debug())
+    print("\n\n =================== \n\n")
 
-    print("New state:")
-    print(new_state.board.to_string_debug())
-    print("=\n=\n=\n=\n=\n")
-
-    #for action in board.get_actions():
-    #    print(action)
+    print(depth_first_tree_search(problem).board.to_string_debug())
     
-    print(board.to_string())
+    
+    # print(board.to_string())
 
-    print("Preparing board")
+    # print("Preparing board")
 
-    board.prepare_board()
+    # board.prepare_board()
 
-    print("Prepared:")
-    for action in board.get_actions():
-        print(action)
-    print(board.to_string_debug())
+    # print("Prepared:")
+    # for action in board.get_actions():
+    #     print(action)
+    # print(board.to_string_debug())
