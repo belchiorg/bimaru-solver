@@ -97,13 +97,33 @@ class Board:
         """Devolve os valores imediatamente acima e abaixo,
         respectivamente."""
 
-        return (self.board[row-1][col], self.board[row+1][col])
+        if row == 0:
+            top = None
+            bottom = self.board[row + 1][col]
+        elif row == 9:
+            bottom = None
+            top = self.board[row - 1][col]
+        else:
+            top = self.board[row - 1][col]
+            bottom = self.board[row + 1][col]
+
+        return (top, bottom)
 
     def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente à esquerda e à direita,
         respectivamente."""
 
-        return (self.board[row][col-1], self.board[row][col+1])
+        if col == 0:
+            left = None
+            right = self.board[row][col + 1]
+        elif col == 9:
+            right = None
+            left = self.board[row][col - 1]
+        else:
+            left = self.board[row][col - 1]
+            right = self.board[row][col + 1]
+
+        return (left, right)
 
     def insert_hint(self, row: int, col: int, val: str):
         """Insere uma dica no tabuleiro."""
