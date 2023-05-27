@@ -136,6 +136,9 @@ class Board:
         self.board[row][col] = val
 
         self.surround_cell(row, col)  # ? Colocar esta função ao inicializar?
+        a = self.check_if_boat_exists(row, col, False) + self.check_if_boat_exists(row, col, True)
+        if a != [] and val != 'C':
+            self.boats_to_place[len(a)] -= 1
 
     @staticmethod
     def parse_instance():
@@ -199,8 +202,14 @@ class Board:
         # Verifica se cada célula não preenchida é parte de um barco
         # e troca pela posição relativa correspondente caso tenha informação
         # suficiente (esta operação deve ser feita APÓS preencher o resto com água)
+        skip_verif = []
         for i in not_filled:
-            self.convert_cell(row, i)
+            r = self.convert_cell(row, i)
+            if r == True and (row, i) not in skip_verif:
+                a = self.check_if_boat_exists(row, i, False) + self.check_if_boat_exists(row, i, True)
+                if a != []:
+                    skip_verif.extend(a)
+                    self.boats_to_place[len(a)] -= 1
 
     def fill_cols(self, col: int):
         # * Função que preenche uma coluna com água
@@ -215,13 +224,19 @@ class Board:
         # Verifica se cada célula não preenchida é parte de um barco
         # e troca pela posição relativa correspondente caso tenha informação
         # suficiente (esta operação deve ser feita APÓS preencher o resto com água)
+        skip_verif = []
         for i in not_filled:
-            self.convert_cell(i, col)
+            r = self.convert_cell(i, col)
+            if r == True and (i, col) not in skip_verif:
+                a = self.check_if_boat_exists(i, col, True) + self.check_if_boat_exists(i, col, False)
+                if a != []:
+                    skip_verif.extend(a)
+                    self.boats_to_place[len(a)] -= 1
 
     def set_cell(self, row: int, col: int, is_ship: bool):
         if (self.board[row][col] is not None and 'A' <= self.board[row][col] <= 'Z'):
             # ? Lançar erro aqui, por não se poder mudar a célula?
-            return
+            return False
 
         if (is_ship == False):
             self.board[row][col] = '.'
@@ -231,6 +246,8 @@ class Board:
             self.convert_cell(row, col)
             self.rows[row] = self.rows[row] - 1
             self.cols[col] = self.cols[col] - 1
+        
+        return True
 
     def set_cell_type(self, row: int, col: int, cell_type: str):
         if (self.board[row][col] is not None and 'A' <= self.board[row][col] <= 'Z'):
@@ -244,11 +261,11 @@ class Board:
 
         self.board[row][col] = cell_type
 
-            #* Belchior, suponho que não seja necessário usar o convert_cell para converter 
-            #* a parte do barco noutra, dependendo dos blocos em redor.
-            #* No entanto, coloquei esta função abaixo para preencher as células à volta com água 
-            #* (as que fazem sentido colocar). É isto que se pretende?   - Gonçalo
-            #* Sim, é isso mesmo. - Belchior
+        #* Belchior, suponho que não seja necessário usar o convert_cell para converter 
+        #* a parte do barco noutra, dependendo dos blocos em redor.
+        #* No entanto, coloquei esta função abaixo para preencher as células à volta com água 
+        #* (as que fazem sentido colocar). É isto que se pretende?   - Gonçalo
+        #* Sim, é isso mesmo. - Belchior
         self.surround_cell(row, col)
 
 
@@ -383,7 +400,7 @@ class Board:
         possibilities = []
 
         if self.is_cell_ship(row, col):
-            if self.check_if_boat_exists(row, col, False):
+            if self.check_if_boat_exists(row, col, False) != []:
                 return possibilities
 
         # Check if we can place the first part of the ship
@@ -430,7 +447,7 @@ class Board:
         possibilities = []
 
         if self.is_cell_ship(row, col):
-            if self.check_if_boat_exists(row, col, True):
+            if self.check_if_boat_exists(row, col, True) != []:
                 return possibilities
 
         # Check if we can place the first part of the ship
@@ -474,22 +491,78 @@ class Board:
         return possibilities
 
     def check_if_boat_exists(self, row: int, col: int, vertical: bool):
+        boat_pos = []
         if self.get_value(row, col) == 'C':
-            return True
+            return [(row, col)]
+        
+        boat_pos.append((row, col))
         if vertical:
             if self.get_value(row, col).upper() == 'T':
                 for i in range(1, 4):
-                    if not self.is_cell_ship(row+i, col):
-                        return False
+                    boat_pos.append((row+i,col))
+                    if not self.is_cell_ship(row+i, col) or self.board[row+i][col] == '?':
+                        return []
                     if self.get_value(row+i, col).upper() == 'B':
-                        return True
+                        return boat_pos
+            elif self.get_value(row, col).upper() == 'B':
+                for i in range(1, 4):
+                    boat_pos.append((row-i,col))
+                    if not self.is_cell_ship(row-i, col) or self.board[row-i][col] == '?':
+                        return []
+                    if self.get_value(row-i, col).upper() == 'T':
+                        return boat_pos
+            elif self.get_value(row, col).upper() == 'M':
+                for a in range(1, 3):
+                    boat_pos.append((row-a,col))
+                    if not self.is_cell_ship(row-a, col) or self.board[row-a][col] == '?':
+                        return []
+                    if self.get_value(row-a, col).upper() == 'T':
+                        break
+                    elif a == 2:
+                        return []
+                for b in range(1, 3):
+                    boat_pos.append((row+b,col))
+                    if not self.is_cell_ship(row+b, col) or self.board[row+b][col] == '?':
+                        return []
+                    if self.get_value(row+b, col).upper() == 'B':
+                        break
+                    elif a == 2:
+                        return []
+                return boat_pos
         else:
             if self.get_value(row, col).upper() == 'L':
                 for i in range(1, 4):
-                    if not self.is_cell_ship(row, col+i):
-                        return False
+                    boat_pos.append((row,col+i))
+                    if not self.is_cell_ship(row, col+i) or self.board[row][col+i] == '?':
+                        return []
                     if self.get_value(row, col+i).upper() == 'R':
-                        return True
+                        return boat_pos
+            elif self.get_value(row, col).upper() == 'R':
+                for i in range(1, 4):
+                    boat_pos.append((row,col-i))
+                    if not self.is_cell_ship(row, col-i) or self.board[row][col-i] == '?':
+                        return []
+                    if self.get_value(row, col-i).upper() == 'L':
+                        return boat_pos
+            elif self.get_value(row, col).upper() == 'M':
+                for a in range(1, 3):
+                    boat_pos.append((row,col-a))
+                    if not self.is_cell_ship(row, col-a) or self.board[row][col-a] == '?':
+                        return []
+                    if self.get_value(row, col-a).upper() == 'L':
+                        break
+                    elif a == 2:
+                        return []
+                for b in range(1, 3):
+                    boat_pos.append((row,col+b))
+                    if not self.is_cell_ship(row, col+b) or self.board[row][col+b] == '?':
+                        return []
+                    if self.get_value(row, col+b).upper() == 'R':
+                        break
+                    elif a == 2:
+                        return []
+                return boat_pos
+        return []
 
     def attempt_complete_boat_hint(self, row: int, col: int):
         # ? Lógica inicial: vai usar uma hint para colocar outra parte do barco que seja óbvio que irá
@@ -509,8 +582,8 @@ class Board:
                 self.set_cell(row+1, col, True)
 
                 # * Depois de set_cell, a peça do barco pode transformar numa extremidade do barco
-                #if self.board[row-1][col].upper() == 'T' and self.board[row+1][col].upper() == 'B':
-                 #   self.boats_to_place[3] = self.boats_to_place[3] - 1
+                if self.board[row-1][col].upper() == 'T' and self.board[row+1][col].upper() == 'B':
+                    self.boats_to_place[3] -= 1
             
                 return True                
 
@@ -520,8 +593,8 @@ class Board:
                 self.set_cell(row, col+1, True)
 
                 # * Depois de set_cell, a peça do barco pode transformar numa extremidade do barco
-                #if self.board[row][col-1].upper() == 'L' and self.board[row][col+1].upper() == 'R':
-                #    self.boats_to_place[3] = self.boats_to_place[3] - 1
+                if self.board[row][col-1].upper() == 'L' and self.board[row][col+1].upper() == 'R':
+                    self.boats_to_place[3] -= 1
                 
                 return True
 
@@ -539,11 +612,11 @@ class Board:
 
             # ? Talvez colocar um erro para o caso de estar out of bounds?
 
-            self.set_cell(row+adjacent[0][0], col+adjacent[0][1], True)
+            a = self.set_cell(row+adjacent[0][0], col+adjacent[0][1], True)
 
             # * Depois de set_cell, a peça do barco pode transformar numa extremidade do barco
-            #if self.board[row+adjacent[0][0]][col+adjacent[0][1]].upper() == adjacent[1]:
-            #    self.boats_to_place[2] = self.boats_to_place[2] - 1
+            if a == True and self.board[row+adjacent[0][0]][col+adjacent[0][1]].upper() == adjacent[1]:
+                self.boats_to_place[2] -= 1
 
             # ? Talvez adicionar uma função para quando a peça colocada fica no meio de duas peças?
             return True
@@ -638,7 +711,7 @@ class Board:
 
         # As hints deixam de ser necessárias, por isso liberta-se espaço
         self.hints = []
-        self.update_boats_to_place()
+        #self.update_boats_to_place()
 
 
     def insert_boat(self, action):
