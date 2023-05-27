@@ -551,8 +551,10 @@ class Board:
         for row in range(len(self.board)):
             for col in range (len(self.board[row])):
                 if not self.is_cell_water(row, col):
-                    actions.extend(self.attempt_boat_horizontally(row, col))
-                    actions.extend(self.attempt_boat_vertically(row, col))
+                    if self.rows[row] > 0:
+                        actions.extend(self.attempt_boat_horizontally(row, col))
+                    if self.cols[col] > 0:
+                        actions.extend(self.attempt_boat_vertically(row, col))
         for boat_size in range(4,0, -1):
             if self.boats_to_place[boat_size] > 0:
                 filtered_actions = list(filter(lambda x: x['size'] == boat_size, actions))
