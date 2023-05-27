@@ -43,6 +43,7 @@ class BimaruState:
         new_state = BimaruState(copy.deepcopy(self.board))
         new_state.board.place_boat(action)
         new_state.board.prepare_board()
+        print(new_state.board.to_string_debug())
         return new_state
 
 
@@ -402,6 +403,9 @@ class Board:
                         if (self.is_cell_water(row, col+i-1)):
                             return possibilities
                         if (self.is_cell_ship(row, col+i)):
+                            if (self.board[row][col+i-1] is None):
+                                if rows[row] == 0 or cols[col+i-1] == 0:
+                                    return possibilities
                             continue
                         elif (self.board[row][col+i-1] is None):
                             if rows[row] == 0 or cols[col+i-1] == 0:
@@ -804,5 +808,7 @@ if __name__ == "__main__":
     board = Board.parse_instance()
     
     problem = Bimaru(board)
+
+    print(board.get_actions())
 
     print(depth_first_tree_search(problem).state.board.to_string())
