@@ -382,7 +382,7 @@ class Board:
         possibilities = []
 
         if self.is_cell_ship(row, col):
-            if self.check_if_boat_exists(row, col, False):
+            if self.check_if_boat_exists(row, col, False) > 0:
                 return possibilities
 
         # Check if we can place the first part of the ship
@@ -426,7 +426,7 @@ class Board:
         possibilities = []
 
         if self.is_cell_ship(row, col):
-            if self.check_if_boat_exists(row, col, True):
+            if self.check_if_boat_exists(row, col, True) > 0:
                 return possibilities
 
         # Check if we can place the first part of the ship
@@ -471,21 +471,66 @@ class Board:
 
     def check_if_boat_exists(self, row: int, col: int, vertical: bool):
         if self.get_value(row, col) == 'C':
-            return True
+            return 1
         if vertical:
             if self.get_value(row, col).upper() == 'T':
                 for i in range(1, 4):
-                    if not self.is_cell_ship(row+i, col):
-                        return False
+                    if not self.is_cell_ship(row+i, col) or self.board[row+i][col] == '?':
+                        return 0
                     if self.get_value(row+i, col).upper() == 'B':
-                        return True
+                        return i + 1
+            elif self.get_value(row, col).upper() == 'B':
+                for i in range(1, 4):
+                    if not self.is_cell_ship(row-i, col) or self.board[row-i][col] == '?':
+                        return 0
+                    if self.get_value(row-i, col).upper() == 'T':
+                        return i + 1
+            elif self.get_value(row, col).upper() == 'M':
+                for a in range(1, 3):
+                    if not self.is_cell_ship(row-a, col) or self.board[row-a][col] == '?':
+                        return 0
+                    if self.get_value(row-a, col).upper() == 'T':
+                        break
+                    elif a == 2:
+                        return 0
+                for b in range(1, 3):
+                    if not self.is_cell_ship(row+b, col) or self.board[row+b][col] == '?':
+                        return 0
+                    if self.get_value(row+b, col).upper() == 'B':
+                        break
+                    elif a == 2:
+                        return 0
+                return a + b + 1
         else:
             if self.get_value(row, col).upper() == 'L':
                 for i in range(1, 4):
-                    if not self.is_cell_ship(row, col+i):
-                        return False
+                    if not self.is_cell_ship(row, col+i) or self.board[row][col+i] == '?':
+                        return 0
                     if self.get_value(row, col+i).upper() == 'R':
-                        return True
+                        return i + 1
+            elif self.get_value(row, col).upper() == 'R':
+                for i in range(1, 4):
+                    if not self.is_cell_ship(row, col-i) or self.board[row][col-i] == '?':
+                        return 0
+                    if self.get_value(row, col-i).upper() == 'L':
+                        return i + 1
+            elif self.get_value(row, col).upper() == 'M':
+                for a in range(1, 3):
+                    if not self.is_cell_ship(row, col-a) or self.board[row][col-a] == '?':
+                        return 0
+                    if self.get_value(row, col-a).upper() == 'L':
+                        break
+                    elif a == 2:
+                        return 0
+                for b in range(1, 3):
+                    if not self.is_cell_ship(row, col+b) or self.board[row][col+b] == '?':
+                        return 0
+                    if self.get_value(row, col+b).upper() == 'R':
+                        break
+                    elif a == 2:
+                        return 0
+                return a + b + 1
+        return 0
 
     def attempt_complete_boat_hint(self, row: int, col: int):
         # ? Lógica inicial: vai usar uma hint para colocar outra parte do barco que seja óbvio que irá
