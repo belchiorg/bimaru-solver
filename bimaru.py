@@ -43,7 +43,6 @@ class BimaruState:
         new_state = BimaruState(copy.deepcopy(self.board))
         new_state.board.place_boat(action)
         new_state.board.prepare_board()
-        print(new_state.board.to_string_debug())
         return new_state
 
 
@@ -236,21 +235,20 @@ class Board:
         if (self.board[row][col] is not None and 'A' <= self.board[row][col] <= 'Z'):
             # ? Lançar erro aqui, por não se poder mudar a célula?
             return
-        
-
-        self.board[row][col] = cell_type
 
         # Check if cell_type is a part of a ship, if so, decrements the row and col values
-        if (any(cell_type.upper() == x for x in ['T', 'M', 'C', 'B', 'L', 'R', '?'])):
+        if (any(cell_type.upper() == x for x in ['T', 'M', 'C', 'B', 'L', 'R', '?']) and not self.is_cell_ship(row, col)):
             self.rows[row] = self.rows[row] - 1
             self.cols[col] = self.cols[col] - 1
+
+        self.board[row][col] = cell_type
 
             #* Belchior, suponho que não seja necessário usar o convert_cell para converter 
             #* a parte do barco noutra, dependendo dos blocos em redor.
             #* No entanto, coloquei esta função abaixo para preencher as células à volta com água 
             #* (as que fazem sentido colocar). É isto que se pretende?   - Gonçalo
             #* Sim, é isso mesmo. - Belchior
-            self.surround_cell(row, col)
+        self.surround_cell(row, col)
 
 
 
@@ -384,7 +382,7 @@ class Board:
         possibilities = []
 
         if self.is_cell_ship(row, col):
-            if self.check_if_boat_exists(row, col, True):
+            if self.check_if_boat_exists(row, col, False):
                 return possibilities
 
         # Check if we can place the first part of the ship
@@ -400,17 +398,22 @@ class Board:
                     if col + i > 10:
                         return possibilities
                     # Checks the next columns
-                    if (not self.is_cell_ship(row-1, col+i) and not self.is_cell_ship(row, col+i) and not self.is_cell_ship(row+1, col+i)):
+                    if (not self.is_cell_ship(row-1, col+i) and not self.is_cell_ship(row+1, col+i)):
                         if (self.is_cell_water(row, col+i-1)):
                             return possibilities
+                        if (self.is_cell_ship(row, col+i)):
+                            continue
                         elif (self.board[row][col+i-1] is None):
-                            if rows[row]-1 < 0 or cols[col+i-1]-1 < 0:
+                            if rows[row] == 0 or cols[col+i-1] == 0:
                                 return possibilities
                             rows[row] -= 1
                             cols[col+i-1] -= 1
                             possibilities.append(
                                 {"row": row, "col": col, "size": i, "orientation": "h"})
-                        elif (self.board[row][col+i-1].upper() == x for x in ['R', '?']):
+                        elif (self.board[row][col+i-1].upper() == '?'):
+                            possibilities.append(
+                                {"row": row, "col": col, "size": i, "orientation": "h"})
+                        elif (self.board[row][col+i-1].upper() == 'R'):
                             possibilities.append(
                                 {"row": row, "col": col, "size": i, "orientation": "h"})
                             return possibilities
@@ -443,14 +446,19 @@ class Board:
                     if (not self.is_cell_ship(row+i, col-1) and not self.is_cell_ship(row+i, col+1)):
                         if (self.is_cell_water(row+i-1, col)):
                             return possibilities
-                        elif (self.board[row+i-1][col] is None or self.board[row+i-1][col].upper() == '?'):
-                            if rows_val[row+i-1]-1 < 0 or cols_val[col]-1 < 0:
+                        elif (self.is_cell_ship(row+i-1, col)):
+                            continue
+                        elif (self.board[row+i-1][col] is None):
+                            if rows_val[row+i-1] == 0 or cols_val[col] == 0:
                                 return possibilities
                             rows_val[row+i-1] -= 1
                             cols_val[col] -= 1
                             if i > 1:
                                 possibilities.append(
                                     {"row": row, "col": col, "size": i, "orientation": "v"})
+                        elif (self.board[row+i-1][col].upper() == '?'):
+                            possibilities.append(
+                                {"row": row, "col": col, "size": i, "orientation": "v"})
                         elif (self.board[row+i-1][col] == 'B'):
                             if i > 1:
                                 possibilities.append(
@@ -546,7 +554,6 @@ class Board:
                     actions.extend(self.attempt_boat_horizontally(row, col))
                     actions.extend(self.attempt_boat_vertically(row, col))
         for boat_size in range(4,0, -1):
-            print(boat_size)
             if self.boats_to_place[boat_size] > 0:
                 filtered_actions = list(filter(lambda x: x['size'] == boat_size, actions))
                 return filtered_actions
@@ -598,7 +605,6 @@ class Board:
         last_cols_to_fill = []
         # Estas funções têm de ser executadas várias vezes para garantir que o board fica preparado
         while True:
-            print(board.to_string_debug(), "\n\n----\n")
             # * Coloca partes de barco que podem ser inferidas pelas hints
             i = 0
             while i < len(self.hints):
@@ -625,10 +631,8 @@ class Board:
                 last_cols_to_fill = cols_to_fill.copy()
 
         # As hints deixam de ser necessárias, por isso liberta-se espaço
-        #del self.hints
+        self.hints = []
         self.update_boats_to_place()
-        print("dgfhsdkjhfjk")
-        print(board.to_string_debug())
 
 
     def insert_boat(self, action):
