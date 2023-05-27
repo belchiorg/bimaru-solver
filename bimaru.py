@@ -43,6 +43,8 @@ class BimaruState:
         new_state = BimaruState(copy.deepcopy(self.board))
         new_state.board.place_boat(action)
         new_state.board.prepare_board()
+        print(new_state.board.to_string_debug())
+        print(new_state.board.get_actions())
         return new_state
 
 
@@ -446,7 +448,7 @@ class Board:
                     if (not self.is_cell_ship(row+i, col-1) and not self.is_cell_ship(row+i, col+1)):
                         if (self.is_cell_water(row+i-1, col)):
                             return possibilities
-                        elif (self.is_cell_ship(row+i-1, col)):
+                        elif (self.is_cell_ship(row+i, col)):
                             continue
                         elif (self.board[row+i-1][col] is None):
                             if rows_val[row+i-1] == 0 or cols_val[col] == 0:
