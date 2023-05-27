@@ -382,7 +382,7 @@ class Board:
         possibilities = []
 
         if self.is_cell_ship(row, col):
-            if self.check_if_boat_exists(row, col, False) > 0:
+            if self.check_if_boat_exists(row, col, False) != []:
                 return possibilities
 
         # Check if we can place the first part of the ship
@@ -426,7 +426,7 @@ class Board:
         possibilities = []
 
         if self.is_cell_ship(row, col):
-            if self.check_if_boat_exists(row, col, True) > 0:
+            if self.check_if_boat_exists(row, col, True) != []:
                 return possibilities
 
         # Check if we can place the first part of the ship
@@ -470,67 +470,78 @@ class Board:
         return possibilities
 
     def check_if_boat_exists(self, row: int, col: int, vertical: bool):
+        boat_pos = []
         if self.get_value(row, col) == 'C':
-            return 1
+            return [(row, col)]
+        
+        boat_pos.append((row, col))
         if vertical:
             if self.get_value(row, col).upper() == 'T':
                 for i in range(1, 4):
+                    boat_pos.append((row+i,col))
                     if not self.is_cell_ship(row+i, col) or self.board[row+i][col] == '?':
-                        return 0
+                        return []
                     if self.get_value(row+i, col).upper() == 'B':
-                        return i + 1
+                        return boat_pos
             elif self.get_value(row, col).upper() == 'B':
                 for i in range(1, 4):
+                    boat_pos.append((row-i,col))
                     if not self.is_cell_ship(row-i, col) or self.board[row-i][col] == '?':
-                        return 0
+                        return []
                     if self.get_value(row-i, col).upper() == 'T':
-                        return i + 1
+                        return boat_pos
             elif self.get_value(row, col).upper() == 'M':
                 for a in range(1, 3):
+                    boat_pos.append((row-a,col))
                     if not self.is_cell_ship(row-a, col) or self.board[row-a][col] == '?':
-                        return 0
+                        return []
                     if self.get_value(row-a, col).upper() == 'T':
                         break
                     elif a == 2:
-                        return 0
+                        return []
                 for b in range(1, 3):
+                    boat_pos.append((row+b,col))
                     if not self.is_cell_ship(row+b, col) or self.board[row+b][col] == '?':
-                        return 0
+                        return []
                     if self.get_value(row+b, col).upper() == 'B':
                         break
                     elif a == 2:
-                        return 0
-                return a + b + 1
+                        return []
+                return boat_pos
         else:
             if self.get_value(row, col).upper() == 'L':
                 for i in range(1, 4):
+                    boat_pos.append((row,col+i))
                     if not self.is_cell_ship(row, col+i) or self.board[row][col+i] == '?':
-                        return 0
+                        return []
                     if self.get_value(row, col+i).upper() == 'R':
-                        return i + 1
+                        return boat_pos
             elif self.get_value(row, col).upper() == 'R':
                 for i in range(1, 4):
+                    boat_pos.append((row,col-i))
                     if not self.is_cell_ship(row, col-i) or self.board[row][col-i] == '?':
-                        return 0
+                        return []
                     if self.get_value(row, col-i).upper() == 'L':
-                        return i + 1
+                        return boat_pos
             elif self.get_value(row, col).upper() == 'M':
                 for a in range(1, 3):
+                    boat_pos.append((row,col-a))
                     if not self.is_cell_ship(row, col-a) or self.board[row][col-a] == '?':
-                        return 0
+                        return []
                     if self.get_value(row, col-a).upper() == 'L':
                         break
                     elif a == 2:
-                        return 0
+                        return []
                 for b in range(1, 3):
+                    boat_pos.append((row,col+b))
                     if not self.is_cell_ship(row, col+b) or self.board[row][col+b] == '?':
-                        return 0
+                        return []
                     if self.get_value(row, col+b).upper() == 'R':
                         break
                     elif a == 2:
-                        return 0
-                return a + b + 1
-        return 0
+                        return []
+                return boat_pos
+        return []
 
     def attempt_complete_boat_hint(self, row: int, col: int):
         # ? Lógica inicial: vai usar uma hint para colocar outra parte do barco que seja óbvio que irá
