@@ -420,30 +420,48 @@ class Board:
 
 
     def get_possible_actions_for_size(self, size: int, init_rows: list, init_cols:list):
+        if size == 1:
+            return self.attempt_boat_size_1()
+        else:
+            actions = []
+            for row in range(len(init_rows)):
+                if init_rows[row] >= size:
+                    actions.extend(self.attempt_boat_row(row, size))
+            if size > 1:
+                for col in range(len(init_cols)):
+                    if init_cols[col] >= size:
+                        actions.extend(self.attempt_boat_col(col, size))
+            return actions
+
+    def attempt_boat_size_1(self):
         actions = []
-        for row in range(len(init_rows)):
-            if init_rows[row] >= size:
-                actions.extend(self.attempt_boat_row(row, size))
-        if size > 1:
-            for col in range(len(init_cols)):
-                if init_cols[col] >= size:
-                    actions.extend(self.attempt_boat_col(col, size))
+        for row in range(len(self.rows)):
+            for i in range(self.rows[row]):
+                for col in range(len(self.cols)):
+                    if self.get_value(row, col) is None:
+                        actions.append({'row': row, 'col': col, 'size': 1, 'orientation': 'h'})
         return actions
+
 
     def attempt_boat_row(self, row, size):
         possibilities = []
+        skip = 0
         for col in range(len(self.cols)-size+1):
+            if skip > 0:
+                skip -= 1
+                continue
             if self.is_cell_water(row, col):
                 continue
             #Checks if there are ships in the col before the boat
-            if self.check_if_boat_exists(row, col, False):
+            skip = len(self.check_if_boat_exists(row, col, False))
+            if skip:
                 continue
             if not self.is_cell_ship(row-1, col-1) and not self.is_cell_ship(row+1, col-1) and not self.is_cell_ship(row, col-1):
                 #It's going to check all cols of the boat, both above and below
                 add = True
+                count = 0
                 for i in range(size):
                     if not self.is_cell_ship(row+1, col+i) and not self.is_cell_ship(row-1, col+i):
-                        count = 0
                         value = self.get_value(row, col+i)
                         if value is None:
                             if self.cols[col+i] == 0 or self.rows[row]-count == 0:
@@ -470,25 +488,31 @@ class Board:
                         #Checks the cols after the boat
                     
             if add:
-                if self.is_cell_ship(row-1, col+size) or self.is_cell_ship(row+1, col+size) or self.is_cell_ship(row, col+size):
+                if not self.is_cell_ship(row-1, col+size) and not self.is_cell_ship(row+1, col+size) and not self.is_cell_ship(row, col+size):
                     possibilities.append({'row': row, 'col': col, 'size': size, 'orientation': 'h'})
         return possibilities
     
     def attempt_boat_col(self, col, size):
         possibilities = []
+        skip = 0
         for row in range(len(self.rows)-size+1):
+            if skip > 0:
+                skip -= 1
+                continue
             if self.is_cell_water(row, col):
                 continue
-            if self.check_if_boat_exists(row, col, False):
+            #Checks if there are ships in the col before the boat
+            skip = len(self.check_if_boat_exists(row, col, True))
+            if skip:
                 continue
             #Checks if there are ships in the row before the boat
             if not self.is_cell_ship(row-1, col-1) and not self.is_cell_ship(row-1, col+1) and not self.is_cell_ship(row-1, col):
                 #It's going to check all rows of the boat, both left and right
                 add = True
+                count = 0
                 for i in range(size):
                     if not self.is_cell_ship(row+i, col+1) and not self.is_cell_ship(row+i, col-1):
                         value = self.get_value(row+i, col)
-                        count = 0
                         if value is None:
                             if self.rows[row+i] == 0 or self.cols[col]-count == 0:
                                 add = False
@@ -513,8 +537,7 @@ class Board:
                 if add:
                     if not self.is_cell_ship(row+size, col-1) and not self.is_cell_ship(row+size, col+1) and not self.is_cell_ship(row+size, col):
                         possibilities.append({'row': row, 'col': col, 'size': size, 'orientation': 'v'})
-        return possibilities
-            
+        return possibilities   
 
     def attempt_boat_horizontally(self, row: int, col: int):
         """
@@ -1008,5 +1031,7 @@ if __name__ == "__main__":
     problem = Bimaru(board)
 
     print(board.to_string_debug())
+
+    print(board.get_actions())
 
     print(depth_first_tree_search(problem).state.board.to_string())
