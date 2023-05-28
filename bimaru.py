@@ -43,7 +43,7 @@ class BimaruState:
         new_state = BimaruState(copy.deepcopy(self.board))
         new_state.board.place_boat(action)
         new_state.board.prepare_board()
-        print(new_state.board.to_string_debug())
+        #print(new_state.board.to_string_debug())
         return new_state
 
 
@@ -303,34 +303,41 @@ class Board:
             if self.is_cell_ship(row+1, col):  # Caso do barco em cima e em baixo
                 self.board[row][col] = 'm'
                 self.surround_cell(row, col)
+                return before_conversion != self.board[row][col]
             # Caso do barco em cima e àgua em baixo
-            elif self.is_cell_water(row+1, col):
+            if self.is_cell_water(row+1, col):
                 self.board[row][col] = 'b'
                 self.surround_cell(row, col)
+                return before_conversion != self.board[row][col]
 
-        elif self.is_cell_ship(row, col-1):
+        if self.is_cell_ship(row, col-1):
             if self.is_cell_ship(row, col+1):  # Caso do barco à esq e à direita
                 self.board[row][col] = 'm'
                 self.surround_cell(row, col)
+                return before_conversion != self.board[row][col]
             # Caso do barco à esq e àgua à direita
             elif self.is_cell_water(row, col+1):
                 self.board[row][col] = 'r'
                 self.surround_cell(row, col)
+                return before_conversion != self.board[row][col]
 
-        elif self.is_cell_water(row-1, col):
+        if self.is_cell_water(row-1, col):
             if self.is_cell_water(row+1, col) and self.is_cell_water(row, col-1) \
                     and self.is_cell_water(row, col+1):  # Caso de haver àgua à volta
                 self.board[row][col] = 'c'
                 self.surround_cell(row, col)
+                return before_conversion != self.board[row][col]
             # Caso de àgua em cima e barco em baixo
             elif self.is_cell_ship(row+1, col):
                 self.board[row][col] = 't'
                 self.surround_cell(row, col)
+                return before_conversion != self.board[row][col]
 
         # Caso de àgua à esq. e barco à dir
-        elif self.is_cell_water(row, col-1) and self.is_cell_ship(row, col+1):
+        if self.is_cell_water(row, col-1) and self.is_cell_ship(row, col+1):
             self.board[row][col] = 'l'
             self.surround_cell(row, col)
+            return before_conversion != self.board[row][col]
 
         else:  # Impossível de saber a posição relativa
             self.board[row][col] = '?'
@@ -389,7 +396,22 @@ class Board:
             for j in range(len(self.cols)):
                 if self.board[i][j] is None:
                     count += 1
+                elif self.board[i][j] == '?':
+                    count += self.get_incomplete_boat_length(i, j, (0, 0))
+                    print(count)
+
         self.num_empty_cells = count
+
+    def get_incomplete_boat_length(self, row: int, col: int, exclusion: tuple):
+        if not 0 <= row < len(self.rows) or not 0 <= col < len(self.cols) or self.board[row][col] is None or self.is_cell_water(row, col):
+            return 0
+
+        recursion_list = [(-1, 0), (0, -1), (0, 1), (1, 0)]
+        try:
+            recursion_list.remove(exclusion)
+        except ValueError:
+            pass
+        return 1 + sum(self.get_incomplete_boat_length(row+i[0], col+i[1], (0-i[0], 0-i[1])) for i in recursion_list)
 
     def attempt_boat_horizontally(self, row: int, col: int):
         """
@@ -780,7 +802,7 @@ class Board:
 
             rows_as_strings.append("".join(board_to_str[i]))
 
-        return ("\n".join(rows_as_strings) + "\n")
+        return ("\n".join(rows_as_strings))
     
     def to_string_debug(self):
         #! Esta função apenas funciona quando o board está preenchido!
