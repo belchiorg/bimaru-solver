@@ -57,6 +57,7 @@ class Board:
 
     hints = [] #* Esta veriável é só usada no início. Quando o algoritmo chega à parte das actions
                #* e do result, o atributo é apagado (para não ocupar espaço).
+    num_empty_cells = 100
     
     boats_to_place = {}
 
@@ -337,6 +338,29 @@ class Board:
         # Return whether the state has changed or not
         return before_conversion != self.board[row][col]
 
+    def surround_cell_list(self, row: int, col: int):
+        '''This function takes two coordinates for a cell with a part of a ship on it
+        and returns a list of all coordinates waiting to be filled'''
+        if (self.board[row][col].upper() == 'C'):
+            return [(-1, 0), (-1, 1), (0, 1), (1, 1),
+                      (1, 0), (1, -1), (0, -1), (-1, -1)]
+        elif (self.board[row][col].upper() == 'T'):
+            return [(2, -1), (1, -1), (0, -1), (-1, -1),
+                      (-1, 0), (-1, 1), (0, 1), (1, 1), (2, 1)]
+        elif (self.board[row][col].upper() == 'L'):
+            return [(-1, 2), (-1, 1), (-1, 0), (-1, -1),
+                      (0, -1), (1, -1), (1, 0), (1, 1), (1, 2)]
+        elif (self.board[row][col].upper() == 'R'):
+            return [(-1, -2), (-1, -1), (-1, 0), (-1, 1),
+                      (0, 1), (1, 1), (1, 0), (1, -1), (1, -2)]
+        elif (self.board[row][col].upper() == 'B'):
+            return [(-2, -1), (-1, -1), (0, -1), (1, -1),
+                      (1, 0), (1, 1), (0, 1), (-1, 1), (-2, 1)]
+        elif (self.board[row][col].upper() == 'M' or self.board[row][col] == '?'):
+            return [(-1, -1), (-1, 1), (1, -1), (1, 1)]
+        else:
+            return []
+
     def surround_cell(self, row: int, col: int):
         """This function takes two coordinates for a cell with a part of a ship on it
         and fills some of the cells around it with water, depending on the relative
@@ -346,25 +370,8 @@ class Board:
             return
 
         # Relative positions of squares to put water
-        toFill = []
-        if (self.board[row][col].upper() == 'C'):
-            toFill = [(-1, 0), (-1, 1), (0, 1), (1, 1),
-                      (1, 0), (1, -1), (0, -1), (-1, -1)]
-        elif (self.board[row][col].upper() == 'T'):
-            toFill = [(2, -1), (1, -1), (0, -1), (-1, -1),
-                      (-1, 0), (-1, 1), (0, 1), (1, 1), (2, 1)]
-        elif (self.board[row][col].upper() == 'L'):
-            toFill = [(-1, 2), (-1, 1), (-1, 0), (-1, -1),
-                      (0, -1), (1, -1), (1, 0), (1, 1), (1, 2)]
-        elif (self.board[row][col].upper() == 'R'):
-            toFill = [(-1, -2), (-1, -1), (-1, 0), (-1, 1),
-                      (0, 1), (1, 1), (1, 0), (1, -1), (1, -2)]
-        elif (self.board[row][col].upper() == 'B'):
-            toFill = [(-2, -1), (-1, -1), (0, -1), (1, -1),
-                      (1, 0), (1, 1), (0, 1), (-1, 1), (-2, 1)]
-        elif (self.board[row][col].upper() == 'M' or self.board[row][col] == '?'):
-            toFill = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
-
+        toFill = self.surround_cell_list(row, col)
+        
         for rel_pos in toFill:
             if not (0 <= row+rel_pos[0] < len(self.rows) and 0 <= col+rel_pos[1] < len(self.cols)):
                 continue
@@ -375,6 +382,14 @@ class Board:
                     'Ship part is on a cell that should supposedly be water')
 
             self.set_cell(row+rel_pos[0], col+rel_pos[1], False)
+
+    def update_num_empty_cells(self):
+        count = 0
+        for i in range(len(self.rows)):
+            for j in range(len(self.cols)):
+                if self.board[i][j] is None:
+                    count += 1
+        self.num_empty_cells = count
 
     def attempt_boat_horizontally(self, row: int, col: int):
         """
@@ -625,6 +640,9 @@ class Board:
 
     def get_actions(self) -> list:
         actions = []
+        if self.num_empty_cells < sum(i * self.boats_to_place[i] for i in range(1, 5)):
+            return []
+
         for row in range(len(self.board)):
             for col in range (len(self.board[row])):
                 if not self.is_cell_water(row, col):
@@ -711,6 +729,8 @@ class Board:
 
         # As hints deixam de ser necessárias, por isso liberta-se espaço
         self.hints = []
+
+        self.update_num_empty_cells()
         #self.update_boats_to_place()
 
 
@@ -882,6 +902,6 @@ if __name__ == "__main__":
     
     problem = Bimaru(board)
 
-    print(board.get_actions())
+    #print(board.get_actions())
 
     print(depth_first_tree_search(problem).state.board.to_string())
