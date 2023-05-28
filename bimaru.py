@@ -19,7 +19,6 @@ from search import (
 
 import copy
 
-
 class BimaruState:
     state_id = 0
     board: "Board"
@@ -55,6 +54,9 @@ class Board:
     rows = []  # ? Este atributo diz respeito à contagem de partes de barcos por preencher por linha
     cols = []  # ? Este atributo diz respeito à contagem de partes de barcos por preencher por coluna
 
+    init_rows = []
+    init_cols = []
+
     hints = [] #* Esta veriável é só usada no início. Quando o algoritmo chega à parte das actions
                #* e do result, o atributo é apagado (para não ocupar espaço).
     num_empty_cells = 100
@@ -79,6 +81,28 @@ class Board:
         # * Adds the rows and cols to the board
         self.rows = rows
         self.cols = cols
+
+        # * Adds the hints (to be used temporarily)
+        self.hints = hints
+
+        self.boats_to_place = boats
+
+        # * Adds the hints to the board
+        for hint in hints:
+            # hint template: [row, col, val]
+            self.insert_hint(hint[0], hint[1], hint[2])
+
+    def __init__(self, rows: list, cols: list, hints: list, boats: dict, init_rows: list, init_cols: list):
+
+        # * Initializes a blank board
+        self.board = [[None] * len(cols) for i in range(len(rows))]
+
+        # * Adds the rows and cols to the board
+        self.rows = rows
+        self.cols = cols
+
+        self.init_rows = init_rows
+        self.init_cols = init_cols
 
         # * Adds the hints (to be used temporarily)
         self.hints = hints
@@ -169,6 +193,9 @@ class Board:
         rows = read_rows()
         cols = read_cols()
 
+        init_rows = rows.copy()
+        init_cols = cols.copy()
+
         hints = []
         hint_count = input()
         for i in range(int(hint_count)):
@@ -178,7 +205,7 @@ class Board:
             hint = [eval(hint[1]), eval(hint[2]), hint[3]]
             hints.append(hint)
 
-        return Board(rows, cols, hints, {4: 1, 3: 2, 2: 3, 1: 4})
+        return Board(rows, cols, hints, {4: 1, 3: 2, 2: 3, 1: 4}, init_rows, init_cols)
 
     # TODO: Outros métodos da classe
 
@@ -391,27 +418,110 @@ class Board:
                     count += 1
         self.num_empty_cells = count
 
+
+    def get_possible_actions_for_size(self, size: int, init_rows: list, init_cols:list):
+        actions = []
+        for row in range(len(init_rows)):
+            if init_rows[row] >= size:
+                actions.extend(self.attempt_boat_row(row, size))
+        if size > 1:
+            for col in range(len(init_cols)):
+                if init_cols[col] >= size:
+                    actions.extend(self.attempt_boat_col(col, size))
+        return actions
+
+    def attempt_boat_row(self, row, size):
+        possibilities = []
+        for col in range(len(self.cols)-size+1):
+            if self.is_cell_water(row, col):
+                continue
+            #Checks if there are ships in the col before the boat
+            if self.check_if_boat_exists(row, col, False):
+                continue
+            if not self.is_cell_ship(row-1, col-1) and not self.is_cell_ship(row+1, col-1) and not self.is_cell_ship(row, col-1):
+                #It's going to check all cols of the boat, both above and below
+                add = True
+                for i in range(size):
+                    if not self.is_cell_ship(row+1, col+i) and not self.is_cell_ship(row-1, col+i):
+                        count = 0
+                        value = self.get_value(row, col+i)
+                        if value is None:
+                            if self.cols[col+i] == 0 or self.rows[row]-count == 0:
+                                add = False
+                                break
+                            count += 1
+                        elif value.upper() in ['W', '.']:
+                            add = False
+                            break
+                        elif self.is_cell_ship(row, col+i):
+                            if i == 0:
+                                if value.upper() not in ['L', '?']:
+                                    add = False
+                                    break
+                            elif i == size-1:
+                                if value.upper() not in ['R', '?']:
+                                    add = False
+                                    break
+                            else:
+                                if value.upper() not in ['M', '?']:
+                                    add = False
+                                    break
+                            
+                        #Checks the cols after the boat
+                    
+            if add:
+                if self.is_cell_ship(row-1, col+size) or self.is_cell_ship(row+1, col+size) or self.is_cell_ship(row, col+size):
+                    possibilities.append({'row': row, 'col': col, 'size': size, 'orientation': 'h'})
+        return possibilities
+    
+    def attempt_boat_col(self, col, size):
+        possibilities = []
+        for row in range(len(self.rows)-size+1):
+            if self.is_cell_water(row, col):
+                continue
+            if self.check_if_boat_exists(row, col, False):
+                continue
+            #Checks if there are ships in the row before the boat
+            if not self.is_cell_ship(row-1, col-1) and not self.is_cell_ship(row-1, col+1) and not self.is_cell_ship(row-1, col):
+                #It's going to check all rows of the boat, both left and right
+                add = True
+                for i in range(size):
+                    if not self.is_cell_ship(row+i, col+1) and not self.is_cell_ship(row+i, col-1):
+                        value = self.get_value(row+i, col)
+                        count = 0
+                        if value is None:
+                            if self.rows[row+i] == 0 or self.cols[col]-count == 0:
+                                add = False
+                                break
+                            count += 1
+                        elif value.upper() in ['W', '.']:
+                            add = False
+                            break
+                        elif self.is_cell_ship(row+i, col):
+                            if i == 0:
+                                if value.upper() not in ['T', '?']:
+                                    add = False
+                                    break
+                            elif i == size-1:
+                                if value.upper() not in ['B', '?']:
+                                    add = False
+                                    break
+                            else:
+                                if value.upper() not in ['M', '?']:
+                                    add = False
+                                    break
+                if add:
+                    if not self.is_cell_ship(row+size, col-1) and not self.is_cell_ship(row+size, col+1) and not self.is_cell_ship(row+size, col):
+                        possibilities.append({'row': row, 'col': col, 'size': size, 'orientation': 'v'})
+        return possibilities
+            
+
     def attempt_boat_horizontally(self, row: int, col: int):
         """
-            * Gonçalo, a lógica destas funções mudou completamente, portanto vou explicar aqui em comentário:
-            * A função attempt_boat_horizontally recebe uma posição (row, col) e tenta colocar um barco horizontalmente
-            * Vai chamar a funcão check_if_boat_exists para ver se já existe um barco naquela posição e orientação. Se houver, então não faz nada.
-            * Se não houver, vai verificar as posiçoes "atras" do barco (se nao ha colisoes). Depois verifica as posiçoes atuais do barco (se nao ha colisoes).
-            * Depois inicia um loop, em que vai verificar se as posicoes para a frente do barco estao vazias, e adiciona exclusivamente as posicoes que nao causam conflito.
-            * Imagina isto , tens algo tipo assim numa linha :
-
-            * [ 'w', 'w' , 'w', 'w', 'w', 'w', 'w', 'w', 'w', 'w' ]
-            * [ 'w', None , None, '?', 'R', 'w', 'w', 'w', 'w', 'w' ]
-            * [ 'w', 'w' , 'w', 'w', 'w', 'w', 'w', 'w', 'w', 'w' ]
-
-            * Pronto, aqui incluia somente o caso de ter ou um barco de 1 naquele primeiro None, ou ter um outro barco de tamanho 4 a ocupar todas
-
-            * -----
-
-            * Belchior, acho que percebi como funcionam as funções. Obrigado pela explicação! 👍
-            * - Gonçalo
-
+        This function takes two coordinates for a cell and checks if it is possible to place a boat horizontally
+        on that cell. If it is, it returns a list of all the possible sizes for the boat.
         """
+
         possibilities = []
 
         if self.is_cell_ship(row, col):
@@ -506,6 +616,8 @@ class Board:
         return possibilities
 
     def check_if_boat_exists(self, row: int, col: int, vertical: bool):
+        if self.get_value(row, col) is None:
+            return []
         boat_pos = []
         if self.get_value(row, col) == 'C':
             return [(row, col)]
@@ -643,17 +755,10 @@ class Board:
         if self.num_empty_cells < sum(i * self.boats_to_place[i] for i in range(1, 5)):
             return []
 
-        for row in range(len(self.board)):
-            for col in range (len(self.board[row])):
-                if not self.is_cell_water(row, col):
-                    if self.rows[row] > 0:
-                        actions.extend(self.attempt_boat_horizontally(row, col))
-                    if self.cols[col] > 0:
-                        actions.extend(self.attempt_boat_vertically(row, col))
-        for boat_size in range(4,0, -1):
-            if self.boats_to_place[boat_size] > 0:
-                filtered_actions = list(filter(lambda x: x['size'] == boat_size, actions))
-                return filtered_actions
+        for i in range(4, 0, -1):
+            if self.boats_to_place[i]>0:
+                return self.get_possible_actions_for_size(i, self.init_rows, self.init_cols)
+        
         return []
     
     def update_boats_to_place(self):
@@ -902,6 +1007,6 @@ if __name__ == "__main__":
     
     problem = Bimaru(board)
 
-    #print(board.get_actions())
+    print(board.to_string_debug())
 
     print(depth_first_tree_search(problem).state.board.to_string())
