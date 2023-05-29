@@ -43,7 +43,7 @@ class BimaruState:
         new_state = BimaruState(copy.deepcopy(self.board))
         new_state.board.place_boat(action)
         new_state.board.prepare_board()
-        #print(new_state.board.to_string_debug())
+        print(new_state.board.to_string_debug())
         return new_state
 
 
@@ -239,6 +239,56 @@ class Board:
                         self.boats_to_place[1] -= 1
                     else:
                         self.boats_to_place[len(a)] -= 1
+
+    def fill_rows_with_boats(self, row: int):
+        to_fill = [i for i in range(len(self.cols)) if self.board[row][i] is None]
+        if len(to_fill) != self.rows[row] or to_fill == []:
+            return
+        
+        to_check = []
+        # Add boat parts for all empty cells in row
+        for i in to_fill:
+            self.set_cell(row, i, True)
+            if self.board[row][i] != '?':
+                to_check.append(i)
+            else:
+                # Cells that changed are automattically surrounded, the others aren't
+                self.surround_cell(row, i)
+        
+        # For every boat part that was converted from '?', check if it's on a newly
+        # completed boat and decrement the number of boats to place if positive
+        for i in to_check:
+            a = self.check_if_boat_exists(row, i, True) + self.check_if_boat_exists(row, i, False)
+            if a != []:
+                if self.board[row][i].upper() == 'C':
+                    self.boats_to_place[1] -= 1
+                else:
+                    self.boats_to_place[len(a)] -= 1
+
+    def fill_cols_with_boats(self, col: int):
+        to_fill = [i for i in range(len(self.rows)) if self.board[i][col] is None]
+        if len(to_fill) != self.cols[col] or to_fill == []:
+            return
+        
+        to_check = []
+        # Add boat parts for all empty cells in row
+        for i in to_fill:
+            self.set_cell(i, col, True)
+            if self.board[i][col] != '?':
+                to_check.append(i)
+            else:
+                # Cells that changed are automattically surrounded, the others aren't
+                self.surround_cell(i, col)
+        
+        # For every boat part that was converted from '?', check if it's on a newly
+        # completed boat and decrement the number of boats to place if positive
+        for i in to_check:
+            a = self.check_if_boat_exists(i, col, True) + self.check_if_boat_exists(i, col, False)
+            if a != []:
+                if self.board[i][col].upper() == 'C':
+                    self.boats_to_place[1] -= 1
+                else:
+                    self.boats_to_place[len(a)] -= 1
 
     def set_cell(self, row: int, col: int, is_ship: bool):
         if (self.board[row][col] is not None and 'A' <= self.board[row][col] <= 'Z'):
@@ -751,6 +801,12 @@ class Board:
             for i in cols_to_fill:
                 self.fill_cols(i)
 
+            for i in range(len(self.rows)):
+                self.fill_rows_with_boats(i)
+
+            for i in range(len(self.cols)):
+                self.fill_cols_with_boats(i)
+
             if rows_to_fill == last_rows_to_fill and cols_to_fill == last_cols_to_fill:
                 break
             else:
@@ -932,4 +988,7 @@ if __name__ == "__main__":
     
     problem = Bimaru(board)
 
-    print(depth_first_tree_search(problem).state.board.to_string())
+    if problem.goal_test(problem.initial) == True:
+        print(board.to_string())
+    else:
+        print(depth_first_tree_search(problem).state.board.to_string())
