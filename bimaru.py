@@ -210,7 +210,10 @@ class Board:
                 a = self.check_if_boat_exists(row, i, False) + self.check_if_boat_exists(row, i, True)
                 if a != []:
                     skip_verif.extend(a)
-                    self.boats_to_place[len(a)] -= 1
+                    if self.board[row][i].upper() == 'C':
+                        self.boats_to_place[1] -= 1
+                    else:
+                        self.boats_to_place[len(a)] -= 1
 
     def fill_cols(self, col: int):
         # * Função que preenche uma coluna com água
@@ -232,7 +235,10 @@ class Board:
                 a = self.check_if_boat_exists(i, col, True) + self.check_if_boat_exists(i, col, False)
                 if a != []:
                     skip_verif.extend(a)
-                    self.boats_to_place[len(a)] -= 1
+                    if self.board[i][col].upper() == 'C':
+                        self.boats_to_place[1] -= 1
+                    else:
+                        self.boats_to_place[len(a)] -= 1
 
     def set_cell(self, row: int, col: int, is_ship: bool):
         if (self.board[row][col] is not None and 'A' <= self.board[row][col] <= 'Z'):
@@ -398,7 +404,6 @@ class Board:
                     count += 1
                 elif self.board[i][j] == '?':
                     count += self.get_incomplete_boat_length(i, j, (0, 0))
-                    print(count)
 
         self.num_empty_cells = count
 
@@ -532,7 +537,7 @@ class Board:
 
     def check_if_boat_exists(self, row: int, col: int, vertical: bool):
         boat_pos = []
-        if self.get_value(row, col) == 'C':
+        if self.get_value(row, col).upper() == 'C':
             return [(row, col)]
         
         boat_pos.append((row, col))
@@ -926,7 +931,5 @@ if __name__ == "__main__":
     board = Board.parse_instance()
     
     problem = Bimaru(board)
-
-    print(board.get_actions())
 
     print(depth_first_tree_search(problem).state.board.to_string())
