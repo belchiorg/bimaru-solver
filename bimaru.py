@@ -43,7 +43,7 @@ class BimaruState:
         new_state = BimaruState(copy.deepcopy(self.board))
         new_state.board.place_boat(action)
         new_state.board.prepare_board()
-        print(new_state.board.to_string_debug())
+        #print(new_state.board.to_string_debug())
         return new_state
 
 
