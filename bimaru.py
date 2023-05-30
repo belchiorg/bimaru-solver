@@ -468,26 +468,6 @@ class Board:
         return 1 + sum(self.get_incomplete_boat_length(row+i[0], col+i[1], (0-i[0], 0-i[1])) for i in recursion_list)
 
     def attempt_boat_horizontally(self, row: int, col: int):
-        """
-            * Gonçalo, a lógica destas funções mudou completamente, portanto vou explicar aqui em comentário:
-            * A função attempt_boat_horizontally recebe uma posição (row, col) e tenta colocar um barco horizontalmente
-            * Vai chamar a funcão check_if_boat_exists para ver se já existe um barco naquela posição e orientação. Se houver, então não faz nada.
-            * Se não houver, vai verificar as posiçoes "atras" do barco (se nao ha colisoes). Depois verifica as posiçoes atuais do barco (se nao ha colisoes).
-            * Depois inicia um loop, em que vai verificar se as posicoes para a frente do barco estao vazias, e adiciona exclusivamente as posicoes que nao causam conflito.
-            * Imagina isto , tens algo tipo assim numa linha :
-
-            * [ 'w', 'w' , 'w', 'w', 'w', 'w', 'w', 'w', 'w', 'w' ]
-            * [ 'w', None , None, '?', 'R', 'w', 'w', 'w', 'w', 'w' ]
-            * [ 'w', 'w' , 'w', 'w', 'w', 'w', 'w', 'w', 'w', 'w' ]
-
-            * Pronto, aqui incluia somente o caso de ter ou um barco de 1 naquele primeiro None, ou ter um outro barco de tamanho 4 a ocupar todas
-
-            * -----
-
-            * Belchior, acho que percebi como funcionam as funções. Obrigado pela explicação! 👍
-            * - Gonçalo
-
-        """
         possibilities = []
 
         if self.is_cell_ship(row, col):
@@ -744,47 +724,6 @@ class Board:
             return self.rows[row] + self.cols[col]
 
         return actions.sort(key=lambda x: sorting_aux(x['row'], x['col']))
-    
-
-
-    def update_boats_to_place(self):
-        '''Updates the boats_to_place variable to reflect on the already placed boats.'''
-        to_place = { 4: 1, 3: 2, 2: 3, 1: 4 }
-        for i in range(len(self.rows)):
-            size = 0
-            for j in range(len(self.cols)):
-                if (self.board[i][j] is None):
-                    size = 0
-                    continue
-
-                if (self.board[i][j].upper() == 'L' and size == 0) \
-                or (self.board[i][j].upper() == 'M' and size > 0):
-                    size = size + 1
-                elif self.board[i][j].upper() == 'R' and size > 0:
-                    to_place[size + 1] = to_place[size + 1] - 1
-                    size = 0
-                elif self.board[i][j].upper() == 'C' and size == 0:
-                    to_place[1] = to_place[1] - 1
-                else:
-                    size = 0
-
-        for i in range(len(self.cols)):
-            size = 0
-            for j in range(len(self.rows)):
-                if (self.board[j][i] is None):
-                    size = 0
-                    continue
-                
-                if (self.board[j][i].upper() == 'T' and size == 0) \
-                or (self.board[j][i].upper() == 'M' and size > 0):
-                    size = size + 1
-                elif self.board[j][i].upper() == 'B' and size > 0:
-                    to_place[size + 1] = to_place[size + 1] - 1
-                    size = 0
-                else:
-                    size = 0
-
-        self.boats_to_place = to_place
         
     def prepare_board(self):
         # * Função que prepara o tabuleiro para ser jogado, preenchendo os espaços vazios com água
@@ -828,7 +767,6 @@ class Board:
         self.hints = []
 
         self.update_num_empty_cells()
-        #self.update_boats_to_place()
 
 
     def insert_boat(self, action):
@@ -1003,4 +941,3 @@ if __name__ == "__main__":
         print(board.to_string())
     else:
         print(depth_first_tree_search(problem).state.board.to_string())
-        #print(astar_search(problem).state.board.to_string())
