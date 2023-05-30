@@ -43,7 +43,6 @@ class BimaruState:
         new_state = BimaruState(copy.deepcopy(self.board))
         new_state.board.place_boat(action)
         new_state.board.prepare_board()
-        print(new_state.board.to_string_debug())
         return new_state
 
 
@@ -739,6 +738,15 @@ class Board:
                 return filtered_actions
         return []
     
+    def sort_actions(self, actions: list) -> list:
+
+        def sorting_aux(row, col):
+            return self.rows[row] + self.cols[col]
+
+        return actions.sort(key=lambda x: sorting_aux(x['row'], x['col']))
+    
+
+
     def update_boats_to_place(self):
         '''Updates the boats_to_place variable to reflect on the already placed boats.'''
         to_place = { 4: 1, 3: 2, 2: 3, 1: 4 }
@@ -973,7 +981,7 @@ class Bimaru(Problem):
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
         # TODO
-        pass
+        return sum(node.state.board.rows + node.state.board.cols)
 
     # TODO: outros metodos da classe
 
@@ -995,3 +1003,4 @@ if __name__ == "__main__":
         print(board.to_string())
     else:
         print(depth_first_tree_search(problem).state.board.to_string())
+        #print(astar_search(problem).state.board.to_string())
