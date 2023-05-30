@@ -317,11 +317,6 @@ class Board:
 
         self.board[row][col] = cell_type
 
-        #* Belchior, suponho que não seja necessário usar o convert_cell para converter 
-        #* a parte do barco noutra, dependendo dos blocos em redor.
-        #* No entanto, coloquei esta função abaixo para preencher as células à volta com água 
-        #* (as que fazem sentido colocar). É isto que se pretende?   - Gonçalo
-        #* Sim, é isso mesmo. - Belchior
         self.surround_cell(row, col)
 
 
@@ -715,7 +710,9 @@ class Board:
         for boat_size in range(4,0, -1):
             if self.boats_to_place[boat_size] > 0:
                 filtered_actions = list(filter(lambda x: x['size'] == boat_size, actions))
-                return filtered_actions
+                if len(filtered_actions) < self.boats_to_place[boat_size]:
+                    return []
+                return self.sort_actions(filtered_actions)
         return []
     
     def sort_actions(self, actions: list) -> list:
@@ -723,7 +720,9 @@ class Board:
         def sorting_aux(row, col):
             return self.rows[row] + self.cols[col]
 
-        return actions.sort(key=lambda x: sorting_aux(x['row'], x['col']))
+        actions.sort(key=lambda x: sorting_aux(x['row'], x['col']))
+
+        return actions
         
     def prepare_board(self):
         # * Função que prepara o tabuleiro para ser jogado, preenchendo os espaços vazios com água
@@ -919,7 +918,11 @@ class Bimaru(Problem):
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
         # TODO
-        return sum(node.state.board.rows + node.state.board.cols)
+        som = 0
+        for i in range(4, 0, -1):
+            som += (i * node.state.board.boats_to_place[i])**2
+        som += sum(node.state.board.rows + node.state.board.cols)
+        return som
 
     # TODO: outros metodos da classe
 
@@ -941,3 +944,4 @@ if __name__ == "__main__":
         print(board.to_string())
     else:
         print(depth_first_tree_search(problem).state.board.to_string())
+        #print(astar_search(problem).state.board.to_string())
