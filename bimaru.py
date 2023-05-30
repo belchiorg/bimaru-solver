@@ -722,6 +722,9 @@ class Board:
         actions = []
         if self.num_empty_cells < sum(i * self.boats_to_place[i] for i in range(1, 5)):
             return []
+        
+        if any([i < 0 for i in self.rows + self.cols]):
+            return []
 
         for row in range(len(self.board)):
             for col in range (len(self.board[row])):
