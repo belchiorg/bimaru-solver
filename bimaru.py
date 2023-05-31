@@ -470,42 +470,45 @@ class Board:
                 return possibilities
 
         # Check if we can place the first part of the ship
-        if (not self.is_cell_ship(row-1, col-1) and not self.is_cell_ship(row, col-1) and not self.is_cell_ship(row+1, col-1)):
-            # Checks the column right before the boat
-            if (not self.is_cell_ship(row-1, col) and not self.is_cell_ship(row+1, col) and (self.board[row][col] is None or any(x == self.board[row][col].upper() for x in ['L', '?']))):
-                # Checks the boat column
-                rows = self.rows.copy()
-                cols = self.cols.copy()
-                for i in range(1, 5):
-                    if self.boats_to_place[i] == 0:
-                        continue
-                    if col + i > 10:
-                        return possibilities
-                    # Checks the next columns
-                    if (not self.is_cell_ship(row-1, col+i) and not self.is_cell_ship(row+1, col+i)):
-                        if (self.is_cell_water(row, col+i-1)):
+        if (self.is_cell_ship(row-1, col-1) or self.is_cell_ship(row, col-1) or self.is_cell_ship(row+1, col-1)):
+            return possibilities
+        # Checks the column right before the boat
+        if (self.is_cell_ship(row-1, col) or self.is_cell_ship(row+1, col) or not (self.board[row][col] is None or any(x == self.board[row][col].upper() for x in ['L', '?']))):
+            return possibilities
+        
+        # Checks the boat column
+        rows = self.rows.copy()
+        cols = self.cols.copy()
+        for i in range(1, 5):
+            if self.boats_to_place[i] == 0:
+                continue
+            if col + i > 10:
+                return possibilities
+            # Checks the next columns
+            if (not self.is_cell_ship(row-1, col+i) and not self.is_cell_ship(row+1, col+i)):
+                if (self.is_cell_water(row, col+i-1)):
+                    return possibilities
+                if (self.is_cell_ship(row, col+i)):
+                    if (self.board[row][col+i-1] is None):
+                        if rows[row] == 0 or cols[col+i-1] == 0:
                             return possibilities
-                        if (self.is_cell_ship(row, col+i)):
-                            if (self.board[row][col+i-1] is None):
-                                if rows[row] == 0 or cols[col+i-1] == 0:
-                                    return possibilities
-                            continue
-                        elif (self.board[row][col+i-1] is None):
-                            if rows[row] == 0 or cols[col+i-1] == 0:
-                                return possibilities
-                            rows[row] -= 1
-                            cols[col+i-1] -= 1
-                            possibilities.append(
-                                {"row": row, "col": col, "size": i, "orientation": "h"})
-                        elif (self.board[row][col+i-1].upper() == '?'):
-                            possibilities.append(
-                                {"row": row, "col": col, "size": i, "orientation": "h"})
-                        elif (self.board[row][col+i-1].upper() == 'R'):
-                            possibilities.append(
-                                {"row": row, "col": col, "size": i, "orientation": "h"})
-                            return possibilities
-                    else:
+                    continue
+                elif (self.board[row][col+i-1] is None):
+                    if rows[row] == 0 or cols[col+i-1] == 0:
                         return possibilities
+                    rows[row] -= 1
+                    cols[col+i-1] -= 1
+                    possibilities.append(
+                        {"row": row, "col": col, "size": i, "orientation": "h"})
+                elif (self.board[row][col+i-1].upper() == '?'):
+                    possibilities.append(
+                        {"row": row, "col": col, "size": i, "orientation": "h"})
+                elif (self.board[row][col+i-1].upper() == 'R'):
+                    possibilities.append(
+                        {"row": row, "col": col, "size": i, "orientation": "h"})
+                    return possibilities
+            else:
+                return possibilities
         return possibilities
 
     def attempt_boat_vertically(self, row: int, col: int):
@@ -517,45 +520,48 @@ class Board:
                 return possibilities
 
         # Check if we can place the first part of the ship
-        if (not self.is_cell_ship(row-1, col-1) and not self.is_cell_ship(row-1, col) and not self.is_cell_ship(row-1, col+1)):
+        if (self.is_cell_ship(row-1, col-1) or self.is_cell_ship(row-1, col) or self.is_cell_ship(row-1, col+1)):
+            return possibilities
 
-            # Checks the column right before the boat
-            if (not self.is_cell_ship(row, col-1) and not self.is_cell_ship(row, col+1) and (self.board[row][col] is None or any(x == self.board[row][col].upper() for x in ['T', '?']))):
-                # Checks the boat column
-                rows_val = self.rows.copy()
-                cols_val = self.cols.copy()
-                for i in range(1, 5):
-                    if self.boats_to_place[i] == 0:
-                        continue
-                    if row + i > 10:
-                        return possibilities
-                    # Checks the next columns
-                    if (not self.is_cell_ship(row+i, col-1) and not self.is_cell_ship(row+i, col+1)):
-                        if (self.is_cell_water(row+i-1, col)):
+        # Checks the column right before the boat
+        if (self.is_cell_ship(row, col-1) or self.is_cell_ship(row, col+1) or not (self.board[row][col] is None or any(x == self.board[row][col].upper() for x in ['T', '?']))):
+            return possibilities
+            
+        # Checks the boat column
+        rows_val = self.rows.copy()
+        cols_val = self.cols.copy()
+        for i in range(1, 5):
+            if self.boats_to_place[i] == 0:
+                continue
+            if row + i > 10:
+                return possibilities
+            # Checks the next columns
+            if (not self.is_cell_ship(row+i, col-1) and not self.is_cell_ship(row+i, col+1)):
+                if (self.is_cell_water(row+i-1, col)):
+                    return possibilities
+                elif (self.is_cell_ship(row+i, col)):
+                    if (self.board[row+i-1][col] is None):
+                        if rows_val[row+i-1] == 0 or cols_val[col] == 0:
                             return possibilities
-                        elif (self.is_cell_ship(row+i, col)):
-                            if (self.board[row+i-1][col] is None):
-                                if rows_val[row+i-1] == 0 or cols_val[col] == 0:
-                                    return possibilities
-                            continue
-                        elif (self.board[row+i-1][col] is None):
-                            if rows_val[row+i-1] == 0 or cols_val[col] == 0:
-                                return possibilities
-                            rows_val[row+i-1] -= 1
-                            cols_val[col] -= 1
-                            if i > 1:
-                                possibilities.append(
-                                    {"row": row, "col": col, "size": i, "orientation": "v"})
-                        elif (self.board[row+i-1][col].upper() == '?'):
-                            possibilities.append(
-                                {"row": row, "col": col, "size": i, "orientation": "v"})
-                        elif (self.board[row+i-1][col] == 'B'):
-                            if i > 1:
-                                possibilities.append(
-                                    {"row": row, "col": col, "size": i, "orientation": "v"})
-                            return possibilities
-                    else:
+                    continue
+                elif (self.board[row+i-1][col] is None):
+                    if rows_val[row+i-1] == 0 or cols_val[col] == 0:
                         return possibilities
+                    rows_val[row+i-1] -= 1
+                    cols_val[col] -= 1
+                    if i > 1:
+                        possibilities.append(
+                            {"row": row, "col": col, "size": i, "orientation": "v"})
+                elif (self.board[row+i-1][col].upper() == '?'):
+                    possibilities.append(
+                        {"row": row, "col": col, "size": i, "orientation": "v"})
+                elif (self.board[row+i-1][col] == 'B'):
+                    if i > 1:
+                        possibilities.append(
+                            {"row": row, "col": col, "size": i, "orientation": "v"})
+                    return possibilities
+            else:
+                return possibilities
 
         return possibilities
 
@@ -639,6 +645,9 @@ class Board:
         # ? Retorna True quando consegue colocar uma célula adjacente e False caso contrário
         if not self.is_cell_ship(row, col):
             return True # Para efeitos de otimização
+        
+        if self.board[row][col].upper() == 'C':
+            return True
 
         # * Caso da hint ser o meio do barco (deve-se ver em que orientação se deve colocar o barco)
         if self.board[row][col].upper() == 'M':
@@ -742,64 +751,32 @@ class Board:
                     i = i + 1
 
             # * Assume-se que todas as hints já foram circundada com água
-            rows_to_fill = [i for i, x in enumerate(self.rows) if x == 0]
+            rows_to_fill = [i for i, x in enumerate(self.rows) if x == 0 and i not in last_rows_to_fill]
             for i in rows_to_fill:
                 self.fill_rows(i)
 
-            cols_to_fill = [i for i, x in enumerate(self.cols) if x == 0]
+            cols_to_fill = [i for i, x in enumerate(self.cols) if x == 0 and i not in last_cols_to_fill]
             for i in cols_to_fill:
                 self.fill_cols(i)
 
-            for i in range(len(self.rows)):
+            rows_left = set(range(len(self.rows))).symmetric_difference(set(rows_to_fill + last_rows_to_fill))
+            for i in rows_left:
                 self.fill_rows_with_boats(i)
 
-            for i in range(len(self.cols)):
+            cols_left = set(range(len(self.cols))).symmetric_difference(set(cols_to_fill + last_cols_to_fill))
+            for i in cols_left:
                 self.fill_cols_with_boats(i)
 
-            if rows_to_fill == last_rows_to_fill and cols_to_fill == last_cols_to_fill:
+            if len(rows_to_fill) == 0 and len(cols_to_fill) == 0:
                 break
             else:
-                last_rows_to_fill = rows_to_fill.copy()
-                last_cols_to_fill = cols_to_fill.copy()
+                last_rows_to_fill.extend(rows_to_fill)
+                last_cols_to_fill.extend(cols_to_fill)
 
         # As hints deixam de ser necessárias, por isso liberta-se espaço
         self.hints = []
 
         self.update_num_empty_cells()
-
-
-    def insert_boat(self, action):
-        """
-        Function that inserts a boat in the board, given an action \n
-        example_action = {"row": 4, "col": 3, "size": 2, "orientation": "v"}
-        """
-        row = action["row"]
-        col = action["col"]
-        size = action["size"]
-        orientation = action["orientation"]
-
-        if size == 1:
-            self.set_cell_type(row, col, 'c')
-            self.boats_to_place[1] -= 1
-            return
-    
-        for i in range(1,size-1):
-            if orientation == 'h':
-                self.set_cell_type(row, col+i, 'm')
-            elif orientation == 'v':
-                self.set_cell_type(row+i, col, 'm')
-        
-        if orientation == 'h':
-            self.set_cell_type(row, col, 'l')
-            self.set_cell_type(row, col+size-1, 'r')
-
-        elif orientation == 'v':
-            self.set_cell_type(row, col, 't')
-            self.set_cell_type(row+size-1, col, 'b')
-
-        self.boats_to_place[size] -= 1
-
-        
 
     def to_string(self):
         #! Esta função apenas funciona quando o board está preenchido!
@@ -944,4 +921,3 @@ if __name__ == "__main__":
         print(board.to_string())
     else:
         print(depth_first_tree_search(problem).state.board.to_string())
-        #print(astar_search(problem).state.board.to_string())
