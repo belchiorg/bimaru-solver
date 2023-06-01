@@ -383,11 +383,6 @@ class Board:
                 self.surround_cell(row, col)
                 return before_conversion != self.board[row][col]
 
-        max_size = 0
-        for i in range(4,0, -1):
-            if self.boats_to_place[i] > 0:
-                max_size = i
-                break
         
         # Caso de àgua à esq. e barco à dir
         if self.is_cell_water(row, col-1) and self.is_cell_ship(row, col+1):
@@ -395,8 +390,13 @@ class Board:
             self.surround_cell(row, col)
             return before_conversion != self.board[row][col]
         
+        max_size = 0
+        for i in range(4,0, -1):
+            if self.boats_to_place[i] > 0:
+                max_size = i
+                break
 
-        elif self.get_incomplete_boat_length(row, col, (0, 0)) == max_size:  # Impossível de saber a posição relativa
+        if self.get_incomplete_boat_length(row, col, (0, 0)) == max_size:  # Impossível de saber a posição relativa
             if self.is_cell_ship(row-1, col):
                 self.board[row][col] = 'b'
                 self.surround_cell(row, col)
