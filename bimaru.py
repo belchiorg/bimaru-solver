@@ -389,7 +389,24 @@ class Board:
             self.surround_cell(row, col)
             return before_conversion != self.board[row][col]
 
-        else:  # Impossível de saber a posição relativa
+        elif self.get_incomplete_boat_length(row, col, (0, 0)) == 4:  # Impossível de saber a posição relativa
+            if self.is_cell_ship(self.board[row-1][col]):
+                self.board[row][col] = 'b'
+                self.surround_cell(row, col)
+                return before_conversion != self.board[row][col]
+            elif self.is_cell_ship(self.board[row+1][col]):
+                self.board[row][col] = 't'
+                self.surround_cell(row, col)
+                return before_conversion != self.board[row][col]
+            elif self.is_cell_ship(self.board[row][col-1]):
+                self.board[row][col] = 'r'
+                self.surround_cell(row, col)
+                return before_conversion != self.board[row][col]
+            elif self.is_cell_ship(self.board[row][col+1]):
+                self.board[row][col] = 'l'
+                self.surround_cell(row, col)
+                return before_conversion != self.board[row][col]
+        else:
             self.board[row][col] = '?'
 
         # Return whether the state has changed or not
