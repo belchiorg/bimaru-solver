@@ -1,0 +1,6 @@
+ROW 1 4 3 2 2 1 2 2 2 1
+COLUMN 0 4 3 0 5 0 2 4 0 2
+3
+HINT 0 2 T
+HINT 7 2 ?
+HINT 8 4 B

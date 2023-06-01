@@ -465,10 +465,6 @@ class Board:
     def attempt_boat_horizontally(self, row: int, col: int):
         possibilities = []
 
-        if self.is_cell_ship(row, col):
-            if self.check_if_boat_exists(row, col, False) != []:
-                return possibilities
-
         # Check if we can place the first part of the ship
         if (self.is_cell_ship(row-1, col-1) or self.is_cell_ship(row, col-1) or self.is_cell_ship(row+1, col-1)):
             return possibilities
@@ -514,11 +510,6 @@ class Board:
     def attempt_boat_vertically(self, row: int, col: int):
 
         possibilities = []
-
-        if self.is_cell_ship(row, col):
-            if self.check_if_boat_exists(row, col, True) != []:
-                return possibilities
-
         # Check if we can place the first part of the ship
         if (self.is_cell_ship(row-1, col-1) or self.is_cell_ship(row-1, col) or self.is_cell_ship(row-1, col+1)):
             return possibilities
@@ -709,13 +700,68 @@ class Board:
         if any([i < 0 for i in self.rows + self.cols]):
             return []
 
+        # for row in range(len(self.board)):
+        #     for col in range (len(self.board[row])):
+        #         if not self.is_cell_water(row, col):
+        #             if self.rows[row] > 0:
+        #                 actions.extend(self.attempt_boat_horizontally(row, col))
+        #             if self.cols[col] > 0:
+        #                 actions.extend(self.attempt_boat_vertically(row, col))
+
+        size = 0
+        for i in range(4, 0, -1):
+            if self.boats_to_place[i] > 0:
+                size = i
+                break
+
         for row in range(len(self.board)):
+            skip = 0
             for col in range (len(self.board[row])):
-                if not self.is_cell_water(row, col):
-                    if self.rows[row] > 0:
-                        actions.extend(self.attempt_boat_horizontally(row, col))
-                    if self.cols[col] > 0:
-                        actions.extend(self.attempt_boat_vertically(row, col))
+                if col + size > len(self.board):
+                    break
+                if skip > 0:
+                    skip -= 1
+                    continue
+                if self.rows[row] > 0:
+                    if self.is_cell_ship(row, col):
+                        already_boat = len(self.check_if_boat_exists(row, col, False))
+                        if already_boat > 0:
+                            skip = already_boat-1
+                            continue
+                        elif self.get_value(row, col).upper() in ['M', 'T', 'C', 'B' ]:
+                            skip = 1
+                            continue
+                    else:
+                        if self.cols[col] <= 0:
+                            continue
+                    actions.extend(self.attempt_boat_horizontally(row, col))
+                else:
+                    break
+    
+        for col in range(len(self.board)):
+            skip = 0
+            for row in range (len(self.board[row])):
+                if row + size > len(self.board):
+                    break
+                if skip > 0:
+                    skip -= 1
+                    continue
+                if self.cols[col] > 0:
+                    if self.is_cell_ship(row, col):
+                        already_boat = len(self.check_if_boat_exists(row, col, True))
+                        if already_boat > 0:
+                            skip = already_boat-1
+                            continue
+                        elif self.get_value(row, col).upper() in ['M', 'L', 'C', 'R' ]:
+                            skip = 1
+                            continue
+                    else:
+                        if self.rows[row] <= 0:
+                            continue
+                    actions.extend(self.attempt_boat_vertically(row, col))
+                else:
+                    break
+
         for boat_size in range(4,0, -1):
             if self.boats_to_place[boat_size] > 0:
                 filtered_actions = list(filter(lambda x: x['size'] == boat_size, actions))
@@ -727,11 +773,63 @@ class Board:
     def sort_actions(self, actions: list) -> list:
 
         def sorting_aux(row, col):
-            return self.rows[row] + self.cols[col]
+            value = 0
+            if self.rows[row] == 0 and self.cols[col] == 0:
+                value += 100
+            return self.rows[row] + self.cols[col] + value
 
         actions.sort(key=lambda x: sorting_aux(x['row'], x['col']))
 
         return actions
+
+    def corre_linhas(self):
+        max_size = 0
+        for i in range(4,0 , -1):
+            if self.boats_to_place[i] > 0:
+                max_size = i
+                break
+
+        for row in range(len(self.board)):
+            cont = 0
+            for col in range(len(self.board[row])):
+                if self.is_cell_ship(row, col):
+                    cont += 1
+                elif self.is_cell_water(row, col):
+                    cont = 0                
+                else:
+                    if cont >= max_size:
+                        self.set_cell_type(row, col, 'W')
+            
+            cont = 0
+            for col in range(len(self.board[row])-1 , -1, -1):
+                if self.is_cell_ship(row, col):
+                    cont += 1
+                elif self.is_cell_water(row, col):
+                    cont = 0
+                else:
+                    if cont >= max_size:
+                        self.set_cell_type(row, col, 'W')
+            
+        for col in range(len(self.board)):
+            cont = 0
+            for row in range(len(self.board[row])):
+                if self.is_cell_ship(row, col):
+                    cont += 1
+                elif self.is_cell_water(row, col):
+                    cont = 0
+                else:
+                    if cont >= max_size:
+                        self.set_cell_type(row, col, 'W')
+            
+            cont = 0
+            for row in range(len(self.board[row])-1 , -1, -1):
+                if self.is_cell_ship(row, col):
+                    cont += 1
+                elif self.is_cell_water(row, col):
+                    cont = 0
+                else:
+                    if cont >= max_size:
+                        self.set_cell_type(row, col, 'W')
         
     def prepare_board(self):
         # * Função que prepara o tabuleiro para ser jogado, preenchendo os espaços vazios com água
@@ -749,6 +847,8 @@ class Board:
                     del self.hints[i]
                 else:
                     i = i + 1
+
+            #self.corre_linhas()
 
             # * Assume-se que todas as hints já foram circundada com água
             rows_to_fill = [i for i, x in enumerate(self.rows) if x == 0 and i not in last_rows_to_fill]
