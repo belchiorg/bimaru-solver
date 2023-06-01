@@ -60,6 +60,8 @@ class Board:
     
     boats_to_place = {}
 
+    question_marks = []
+
     def __init__(self):
         for i in range(10):
             self.filled_rows.append(0)
@@ -299,6 +301,7 @@ class Board:
         else:
             # Colocar uma parte do barco, cuja posição relativa é desconhecida
             self.board[row][col] = '?'
+            self.question_marks.append((row, col))
             self.convert_cell(row, col)
             self.rows[row] = self.rows[row] - 1
             self.cols[col] = self.cols[col] - 1
@@ -316,6 +319,9 @@ class Board:
             self.cols[col] = self.cols[col] - 1
 
         self.board[row][col] = cell_type
+
+        if cell_type == '?':
+            self.question_marks.append((row, col))
 
         self.surround_cell(row, col)
 
@@ -415,6 +421,8 @@ class Board:
                 return before_conversion != self.board[row][col]
         else:
             self.board[row][col] = '?'
+            if before_conversion != '?':
+                self.question_marks.append((row, col))
 
         # Return whether the state has changed or not
         return before_conversion != self.board[row][col]
@@ -854,6 +862,21 @@ class Board:
                 else:
                     if cont >= max_size:
                         self.set_cell_type(row, col, 'W')
+
+    def recheck_question_marks(self):
+        print()
+        i = 0
+        while i < len(self.question_marks):
+            cell = self.question_marks[i]
+            if self.board[cell[0]][cell[1]] != '?':
+                del self.question_marks[i]
+                continue
+
+            ret = self.convert_cell(cell[0], cell[1])
+            if ret == True:
+                del self.question_marks[i]
+            else:
+                i += 1
         
     def prepare_board(self):
         # * Função que prepara o tabuleiro para ser jogado, preenchendo os espaços vazios com água
@@ -890,6 +913,8 @@ class Board:
             cols_left = set(range(len(self.cols))).symmetric_difference(set(cols_to_fill + last_cols_to_fill))
             for i in cols_left:
                 self.fill_cols_with_boats(i)
+
+            self.recheck_question_marks()
 
             if len(rows_to_fill) == 0 and len(cols_to_fill) == 0:
                 break
@@ -1041,7 +1066,11 @@ if __name__ == "__main__":
     
     problem = Bimaru(board)
 
-    if problem.goal_test(problem.initial) == True:
-        print(board.to_string())
-    else:
-        print(depth_first_tree_search(problem).state.board.to_string())
+    #if problem.goal_test(problem.initial) == True:
+       # print(board.to_string())
+    #else:
+        #print(depth_first_tree_search(problem).state.board.to_string())
+
+    print(board.to_string_debug())
+    board.prepare_board()
+    print(board.to_string_debug())
