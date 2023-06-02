@@ -62,6 +62,10 @@ class Board:
 
     question_marks = []
 
+    already_tested = {4: [], 3: [], 2: [], 1: []}
+
+    wrong_board = False
+
     def __init__(self):
         for i in range(10):
             self.filled_rows.append(0)
@@ -465,10 +469,13 @@ class Board:
             if not (0 <= row+rel_pos[0] < len(self.rows) and 0 <= col+rel_pos[1] < len(self.cols)):
                 continue
 
-            if (self.is_cell_ship(row+rel_pos[0], col+rel_pos[1])):
-                # ? Raise exception to affirm there is a mistake, or just return an error value?
-                raise AssertionError(
-                    'Ship part is on a cell that should supposedly be water')
+            try:
+                if (self.is_cell_ship(row+rel_pos[0], col+rel_pos[1])):
+                    # ? Raise exception to affirm there is a mistake, or just return an error value?
+                    raise AssertionError(
+                        'Ship part is on a cell that should supposedly be water')
+            except AssertionError:
+                self.wrong_board = True
 
             self.set_cell(row+rel_pos[0], col+rel_pos[1], False)
 
@@ -725,9 +732,11 @@ class Board:
         return False
 
     def get_actions(self) -> list:
-        actions = []
-        if self.num_empty_cells < sum(i * self.boats_to_place[i] for i in range(1, 5)):
+        if self.wrong_board:
             return []
+        actions = []
+        # if self.num_empty_cells < sum(i * self.boats_to_place[i] for i in range(1, 5)):
+        #     return []
         
         if any([i < 0 for i in self.rows + self.cols]):
             return []
@@ -799,72 +808,34 @@ class Board:
                 filtered_actions = list(filter(lambda x: x['size'] == boat_size, actions))
                 if len(filtered_actions) < self.boats_to_place[boat_size]:
                     return []
+                while i < len(filtered_actions):
+                    if filtered_actions[i] in self.already_tested[boat_size]:
+                        del filtered_actions[i]
+                        continue
+                    i+=1
                 return self.sort_actions(filtered_actions)
         return []
     
     def sort_actions(self, actions: list) -> list:
 
-        def sorting_aux(row, col):
-            value = 0
-            if self.rows[row] == 0 and self.cols[col] == 0:
-                value += 100
-            return self.rows[row] + self.cols[col] + value
-
-        actions.sort(key=lambda x: sorting_aux(x['row'], x['col']))
+        def sorting_aux(row, col, orientation, size):
+            if (row, col, orientation) in self.already_tested[size]:
+                return -100
+            if orientation == 'h':
+                for i in range(col):
+                    if self.rows[row] <= 0 and self.cols[i] <= 0:
+                        return -10
+            elif orientation == 'v':
+                for i in range(row):
+                    if self.cols[col] <= 0 and self.rows[i] <= 0:
+                        return -10
+            return self.rows[row] + self.cols[col]
+ 
+        actions.sort(key=lambda x: sorting_aux(x['row'], x['col'], x['orientation'], x['size']))
 
         return actions
 
-    def corre_linhas(self):
-        max_size = 0
-        for i in range(4,0 , -1):
-            if self.boats_to_place[i] > 0:
-                max_size = i
-                break
-
-        for row in range(len(self.board)):
-            cont = 0
-            for col in range(len(self.board[row])):
-                if self.is_cell_ship(row, col):
-                    cont += 1
-                elif self.is_cell_water(row, col):
-                    cont = 0                
-                else:
-                    if cont >= max_size:
-                        self.set_cell_type(row, col, 'W')
-            
-            cont = 0
-            for col in range(len(self.board[row])-1 , -1, -1):
-                if self.is_cell_ship(row, col):
-                    cont += 1
-                elif self.is_cell_water(row, col):
-                    cont = 0
-                else:
-                    if cont >= max_size:
-                        self.set_cell_type(row, col, 'W')
-            
-        for col in range(len(self.board)):
-            cont = 0
-            for row in range(len(self.board[row])):
-                if self.is_cell_ship(row, col):
-                    cont += 1
-                elif self.is_cell_water(row, col):
-                    cont = 0
-                else:
-                    if cont >= max_size:
-                        self.set_cell_type(row, col, 'W')
-            
-            cont = 0
-            for row in range(len(self.board[row])-1 , -1, -1):
-                if self.is_cell_ship(row, col):
-                    cont += 1
-                elif self.is_cell_water(row, col):
-                    cont = 0
-                else:
-                    if cont >= max_size:
-                        self.set_cell_type(row, col, 'W')
-
     def recheck_question_marks(self):
-        print()
         i = 0
         while i < len(self.question_marks):
             cell = self.question_marks[i]
@@ -874,6 +845,10 @@ class Board:
 
             ret = self.convert_cell(cell[0], cell[1])
             if ret == True:
+                boat_h = self.check_if_boat_exists(cell[0], cell[1], False)
+                boat_v = self.check_if_boat_exists(cell[0], cell[1], True)
+                if boat_h + boat_v != []:
+                    self.boats_to_place[max(len(boat_h), len(boat_v))] -= 1
                 del self.question_marks[i]
             else:
                 i += 1
@@ -894,8 +869,6 @@ class Board:
                     del self.hints[i]
                 else:
                     i = i + 1
-
-            #self.corre_linhas()
 
             # * Assume-se que todas as hints já foram circundada com água
             rows_to_fill = [i for i, x in enumerate(self.rows) if x == 0 and i not in last_rows_to_fill]
@@ -996,6 +969,7 @@ class Board:
                 self.set_cell_type(row+size-1, col, 'b')
         
         self.boats_to_place[size] -= 1
+        self.already_tested[size].append((row, col, orientation))
         return
 
         
@@ -1066,11 +1040,10 @@ if __name__ == "__main__":
     
     problem = Bimaru(board)
 
-    #if problem.goal_test(problem.initial) == True:
-       # print(board.to_string())
-    #else:
+    if problem.goal_test(problem.initial) == True:
+        print(board.to_string())
+    else:
         #print(depth_first_tree_search(problem).state.board.to_string())
+        print(greedy_search(problem).state.board.to_string())
 
-    print(board.to_string_debug())
-    board.prepare_board()
-    print(board.to_string_debug())
+
